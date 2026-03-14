@@ -1,0 +1,14 @@
+# Entorno virtual
+venv/
+__pycache__/
+*.pyc
+
+# Variables de entorno
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+postgres_data/
