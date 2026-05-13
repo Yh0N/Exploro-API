@@ -1,0 +1,15 @@
+[run]
+source = app
+branch = True
+omit =
+    app/services/linear_regression.py
+    app/services/collaborative_filter.py
+    app/services/sentiment_analysis.py
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError

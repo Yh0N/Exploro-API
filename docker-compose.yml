@@ -1,3 +1,8 @@
+# EXPLORO: levantar API + Postgres juntos para que el host "db" exista en la red Docker.
+#   docker compose up --build
+# Si ejecutas solo la imagen de la API (p. ej. "Run" en Docker Desktop), NO habrá servicio "db"
+# y fallará: could not translate host name "db". Solución: usar compose, o poner en .env
+# POSTGRES_HOST=host.docker.internal y DATABASE_URL apuntando a tu Postgres en el puerto publicado.
 version: "3.9"
 
 services:
@@ -9,7 +14,8 @@ services:
     env_file:
       - .env
     ports:
-      - "5432:5432"
+      - "5433:5432"
+#5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

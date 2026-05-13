@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+env:
+  PYTHON_VERSION: "3.11"
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: exploro_test
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: "5432"
+  DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/exploro_test
+  SECRET_KEY: ci-secret-key-must-be-at-least-32-chars-long
+  ALGORITHM: HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: exploro_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Pruebas unitarias (pytest + mocks)
+        run: |
+          pytest tests/unit \
+            --cov=app \
+            --cov-config=.coveragerc \
+            --cov-report=term \
+            --cov-report=
+      - name: Integración PostGIS + cobertura combinada (>= 80 %)
+        env:
+          USE_TESTCONTAINERS: "0"
+        run: |
+          pytest tests/integration -m integration \
+            --cov=app \
+            --cov-append \
+            --cov-config=.coveragerc \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=80 \
+            -v --tb=short
+
+  load-test:
+    needs: [test]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: exploro_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Esquema y API para Locust
+        env:
+          USE_TESTCONTAINERS: "0"
+        run: |
+          python - <<'PY'
+          from sqlalchemy import text
+          from app.database.connection import Base, engine
+
+          with engine.connect() as c:
+              c.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+              c.commit()
+          Base.metadata.create_all(bind=engine)
+          PY
+          nohup uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          echo $! > /tmp/uvicorn.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8000/ >/dev/null; then
+              echo "API lista"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Timeout esperando API"; cat /tmp/uvicorn.log; exit 1
+      - name: Locust (~100 usuarios, ramp 100/s, 30 s)
+        run: |
+          locust -f tests/performance/locustfile.py \
+            --host http://127.0.0.1:8000 \
+            --headless -u 100 -r 100 -t 30s \
+            --csv /tmp/exploro_locust
+      - name: Verificar p95 < 200 ms
+        run: |
+          python scripts/check_locust_p95.py /tmp/exploro_locust_stats.csv --max-p95-ms 200
+      - name: Detener API
+        if: always()
+        run: |
+          if [ -f /tmp/uvicorn.pid ]; then kill $(cat /tmp/uvicorn.pid) || true; fi
+
+  owasp-zap-baseline:
+    needs: [test]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: exploro_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Esquema y API para ZAP
+        env:
+          USE_TESTCONTAINERS: "0"
+        run: |
+          python - <<'PY'
+          from sqlalchemy import text
+          from app.database.connection import Base, engine
+
+          with engine.connect() as c:
+              c.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+              c.commit()
+          Base.metadata.create_all(bind=engine)
+          PY
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          echo $! > /tmp/uvicorn.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8000/ >/dev/null; then
+              echo "API lista"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Timeout esperando API"; cat /tmp/uvicorn.log; exit 1
+      - name: Resolver host.docker.internal (Linux / Actions)
+        run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+      - name: OWASP ZAP Baseline (SQLi, auth, cabeceras)
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: "http://host.docker.internal:8000"
+          cmd_options: "-a"
+      - name: Detener API
+        if: always()
+        run: |
+          if [ -f /tmp/uvicorn.pid ]; then kill $(cat /tmp/uvicorn.pid) || true; fi

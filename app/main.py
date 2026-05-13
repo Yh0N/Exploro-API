@@ -8,6 +8,8 @@ Documentación Swagger disponible en: http://localhost:8000/docs
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
 from app.database.connection import engine, Base
 
@@ -28,6 +30,7 @@ from app.routes.review_routes import router as review_router
 from app.routes.recommendation_routes import router as recommendation_router
 from app.routes.pyme_routes import router as pyme_router
 from app.routes.admin_routes import router as admin_router
+from app.routes.upload_routes import router as upload_router
 
 
 # Crear la aplicación FastAPI
@@ -45,14 +48,25 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configurar CORS para permitir solicitudes desde cualquier origen (desarrollo)
+# Configurar CORS para permitir solicitudes desde el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios permitidos
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "https://1h4bg5xs-3000.use2.devtunnels.ms",
+    ],
+    allow_origin_regex=r"https://.*\.devtunnels\.ms",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Servir archivos estáticos (fotos subidas)
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 # Evento de inicio: crear tablas en la base de datos si no existen
@@ -74,6 +88,7 @@ app.include_router(review_router)
 app.include_router(recommendation_router)
 app.include_router(pyme_router)
 app.include_router(admin_router)
+app.include_router(upload_router)
 
 
 # Endpoint raíz (health check)
@@ -85,3 +100,4 @@ def home():
         "version": "1.0.0",
         "docs": "/docs"
     }
+

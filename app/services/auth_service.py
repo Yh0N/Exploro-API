@@ -14,7 +14,9 @@ from app.models.user import Usuario
 from app.models.profile import Perfil
 from app.models.auth_token import TokenRevocado
 from app.core.security import hash_password, verify_password, create_access_token, verify_token
-from app.schemas.user_schema import UserCreate, UserLogin
+from app.schemas.user_schema import UserCreate, UserLogin, UserSocialLogin
+import secrets
+import string
 
 
 def registrar_usuario(db: Session, datos: UserCreate) -> Usuario:
@@ -50,7 +52,7 @@ def registrar_usuario(db: Session, datos: UserCreate) -> Usuario:
         correo=datos.correo,
         contraseña=hash_password(datos.contraseña),
         preferencias=datos.preferencias if datos.preferencias else [],
-        rol=datos.rol if datos.rol else "usuario_regular"
+        rol=datos.rol if datos.rol else 1
     )
     db.add(nuevo_usuario)
     db.flush()  # Obtener el id_usuario sin hacer commit
@@ -98,7 +100,49 @@ def login_usuario(db: Session, datos: UserLogin) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
+    # Generar token JWT
+    access_token = create_access_token(data={"sub": usuario.correo})
 
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
+def login_social_usuario(db: Session, datos: UserSocialLogin) -> dict:
+    """
+    Inicia sesión de un usuario mediante proveedor social (Google/Facebook).
+    
+    1. Si el usuario existe por correo, lo loguea.
+    2. Si no existe, lo crea automáticamente.
+    """
+    # En un sistema real, aquí validaríamos el id_token con Google/Facebook
+    # Para fines de demostración, usaremos el correo enviado
+    correo = datos.correo or f"{datos.provider}_{secrets.token_hex(4)}@exploro.com"
+    nombre = datos.nombre or f"Usuario {datos.provider.capitalize()}"
+    
+    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
+    
+    if not usuario:
+        # Crear usuario nuevo
+        # Generar contraseña aleatoria segura que el usuario nunca usará directamente
+        alphabet = string.ascii_letters + string.digits
+        random_password = ''.join(secrets.choice(alphabet) for i in range(20))
+        
+        usuario = Usuario(
+            nombre=nombre,
+            correo=correo,
+            contraseña=hash_password(random_password),
+            rol=1 # Turista por defecto
+        )
+        db.add(usuario)
+        db.flush()
+        
+        perfil = Perfil(id_usuario=usuario.id_usuario)
+        db.add(perfil)
+        db.commit()
+        db.refresh(usuario)
+    
     # Generar token JWT
     access_token = create_access_token(data={"sub": usuario.correo})
 

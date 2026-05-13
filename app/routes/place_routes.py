@@ -19,6 +19,7 @@ from app.services.place_service import (
 from app.core.security import get_current_user, require_role
 from app.models.user import Usuario
 from app.models.pyme import Pyme
+from app.services.geocoding_service import geocode_address
 
 router = APIRouter(prefix="/places", tags=["Lugares"])
 
@@ -44,20 +45,20 @@ def list_places(
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Registrar lugar",
-    description="Registra un nuevo lugar turístico (solo pyme o admin)"
+    description="Registra un nuevo lugar turístico (abierto a todos los usuarios)"
 )
-def create_place(
+async def create_place(
     datos: PlaceCreate,
-    current_user: Usuario = Depends(require_role(["pyme", "administrador"])),
+    current_user: Usuario = Depends(require_role([1, 2, 3])),
     db: Session = Depends(get_db)
 ):
     """
     Registra un nuevo lugar turístico.
-    Solo usuarios con rol 'pyme' o 'administrador' pueden crear lugares.
-    Las pymes deben tener un perfil de Pyme registrado.
+    Cualquier usuario autenticado puede proponer un lugar.
+    Si el usuario es una pyme, debe tener su perfil registrado.
     El lugar se crea con estado aprobado=False (pendiente de revisión).
     """
-    if current_user.rol == "pyme":
+    if current_user.rol == 2:
         pyme_existente = db.query(Pyme).filter(Pyme.id_usuario == current_user.id_usuario).first()
         if not pyme_existente:
             from fastapi import HTTPException
@@ -66,7 +67,27 @@ def create_place(
                 detail="Debes registrar tu pyme antes de crear lugares."
             )
 
-    return crear_lugar(db, datos)
+    # Lógica de geocodificación si no hay coordenadas
+    if datos.latitud is None or datos.longitud is None:
+        if not datos.ubicacion_textual:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Debes proporcionar coordenadas (lat/lng) o una dirección válida."
+            )
+        
+        # Intentar geocodificar la dirección
+        coords = await geocode_address(datos.ubicacion_textual)
+        if not coords:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"No se pudo encontrar la ubicación para: {datos.ubicacion_textual}. Prueba con una dirección más específica o usa coordenadas."
+            )
+        
+        datos.latitud, datos.longitud = coords
+
+    return crear_lugar(db, datos, current_user.id_usuario)
 
 
 # ⚠️ IMPORTANTE: /nearby DEBE ir ANTES de /{id} para evitar conflicto de rutas
@@ -79,6 +100,7 @@ def nearby_places(
     latitud: float = Query(..., ge=-90, le=90, description="Latitud del punto de referencia"),
     longitud: float = Query(..., ge=-180, le=180, description="Longitud del punto de referencia"),
     radio_km: float = Query(2.0, gt=0, le=50, description="Radio de búsqueda en km"),
+    current_user: Optional[Usuario] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -86,7 +108,11 @@ def nearby_places(
     Usa PostGIS ST_DWithin para filtrado eficiente y ST_Distance
     para calcular la distancia exacta en metros.
     """
-    return buscar_lugares_cercanos(db, latitud, longitud, radio_km)
+    aprobados_only = True
+    if current_user and current_user.rol == 3:
+        aprobados_only = False
+        
+    return buscar_lugares_cercanos(db, latitud, longitud, radio_km, aprobados_only)
 
 
 @router.get(
@@ -110,7 +136,7 @@ def get_place(id_lugar: int, db: Session = Depends(get_db)):
 def update_place(
     id_lugar: int,
     datos: PlaceUpdate,
-    current_user: Usuario = Depends(require_role(["pyme", "administrador"])),
+    current_user: Usuario = Depends(require_role([2, 3])),
     db: Session = Depends(get_db)
 ):
     """
@@ -128,7 +154,7 @@ def update_place(
 )
 def delete_place(
     id_lugar: int,
-    current_user: Usuario = Depends(require_role(["administrador"])),
+    current_user: Usuario = Depends(require_role([3])),
     db: Session = Depends(get_db)
 ):
     """

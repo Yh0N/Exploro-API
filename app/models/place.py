@@ -9,7 +9,7 @@ Se calcula dinámicamente con AVG() sobre las reseñas para evitar
 desincronización y condiciones de carrera.
 """
 
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -32,12 +32,18 @@ class Lugar(Base):
     id_lugar = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(200), nullable=False)
     descripcion = Column(String(1000), nullable=True)
-    latitud = Column(Float, nullable=False)
-    longitud = Column(Float, nullable=False)
+    latitud = Column(Float, nullable=True)
+    longitud = Column(Float, nullable=True)
     ubicacion = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
+    direccion = Column(String(300), nullable=True)  # Dirección textual (opcional)
     categoria = Column(String(100), nullable=False)  # restaurante, hotel, museo, parque, tour, etc.
-    aprobado = Column(Boolean, default=False)  # Requiere aprobación de admin
+    subcategoria = Column(String(100), nullable=True)  # Subcategoría específica
+    aprobado = Column(Boolean, default=True)  # Se crea aprobado por defecto
+    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="SET NULL"), nullable=True)
+    foto_principal = Column(String(500), nullable=True)
+    fotos = Column(String(2000), nullable=True)  # Lista separada por comas de URLs de fotos
 
     # Relaciones
+    usuario = relationship("Usuario", back_populates="lugares")
     resenas = relationship("Reseña", back_populates="lugar", cascade="all, delete-orphan")
     recomendaciones = relationship("Recomendacion", back_populates="lugar", cascade="all, delete-orphan")

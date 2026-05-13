@@ -6,11 +6,19 @@ categorías de interés de forma eficiente.
 El campo 'rol' maneja todos los tipos de usuario (incluido administrador).
 """
 
-from sqlalchemy import Column, Integer, String, Date, ARRAY
+from sqlalchemy import Column, Integer, String, Date, ARRAY, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from datetime import date
 
 from app.database.connection import Base
+
+# Tabla de asociación para Favoritos (Muchos a Muchos entre Usuario y Lugar)
+favoritos = Table(
+    "favoritos",
+    Base.metadata,
+    Column("id_usuario", Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), primary_key=True),
+    Column("id_lugar", Integer, ForeignKey("lugares.id_lugar", ondelete="CASCADE"), primary_key=True)
+)
 
 
 class Usuario(Base):
@@ -30,11 +38,15 @@ class Usuario(Base):
     contraseña = Column(String(255), nullable=False)  # Hash bcrypt
     preferencias = Column(ARRAY(String), default=[])  # Array de categorías de interés
     fecha_registro = Column(Date, default=date.today)
-    rol = Column(String(20), default="usuario_regular")  # usuario_regular, pyme, administrador
+    rol = Column(Integer, default=1)  # 1: usuario_regular, 2: pyme, 3: administrador
 
     # Relaciones con otras tablas
     perfil = relationship("Perfil", back_populates="usuario", uselist=False, cascade="all, delete-orphan")
-    resenas = relationship("Reseña", back_populates="usuario", cascade="all, delete-orphan")
+    resenas = relationship("Reseña", foreign_keys="[Reseña.id_usuario]", back_populates="usuario", cascade="all, delete-orphan")
     recomendaciones = relationship("Recomendacion", back_populates="usuario", cascade="all, delete-orphan")
     pyme = relationship("Pyme", back_populates="usuario", uselist=False, cascade="all, delete-orphan")
+    lugares = relationship("Lugar", back_populates="usuario")
     tokens_revocados = relationship("TokenRevocado", back_populates="usuario", cascade="all, delete-orphan")
+    
+    # Favoritos (Muchos a Muchos)
+    favorites = relationship("Lugar", secondary=favoritos, backref="usuarios_que_marcaron_favorito")

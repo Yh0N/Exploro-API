@@ -23,7 +23,9 @@ class Reseña(Base):
 
     id_resena = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=False)
-    id_lugar = Column(Integer, ForeignKey("lugares.id_lugar", ondelete="CASCADE"), nullable=False)
+    id_lugar = Column(Integer, ForeignKey("lugares.id_lugar", ondelete="CASCADE"), nullable=True)
+    id_pyme = Column(Integer, ForeignKey("pymes.id_pyme", ondelete="CASCADE"), nullable=True)
+    id_usuario_destino = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=True)
     comentarios = Column(String(1000), nullable=True)
     puntuacion = Column(Integer, nullable=False)
     fecha = Column(Date, default=date.today)
@@ -34,5 +36,7 @@ class Reseña(Base):
     )
 
     # Relaciones
-    usuario = relationship("Usuario", back_populates="resenas")
+    usuario = relationship("Usuario", foreign_keys=[id_usuario], back_populates="resenas")
+    usuario_destino = relationship("Usuario", foreign_keys=[id_usuario_destino])
     lugar = relationship("Lugar", back_populates="resenas")
+    pyme = relationship("Pyme")  # Nueva relación con Pyme

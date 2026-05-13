@@ -4,9 +4,10 @@ Define los modelos de validación para las peticiones y respuestas
 relacionadas con usuarios, perfiles y autenticación.
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List
 from datetime import date
+import re
 
 
 # ============================================================
@@ -17,15 +18,38 @@ class UserCreate(BaseModel):
     """Esquema para el registro de un nuevo usuario."""
     nombre: str = Field(..., min_length=2, max_length=100, description="Nombre completo del usuario")
     correo: str = Field(..., max_length=150, description="Correo electrónico único")
-    contraseña: str = Field(..., min_length=6, max_length=100, description="Contraseña (mínimo 6 caracteres)")
+    contraseña: str = Field(..., min_length=8, max_length=100, description="Contraseña (mínimo 8 caracteres, mayúscula, número y carácter especial)")
     preferencias: Optional[List[str]] = Field(default=[], description="Lista de categorías de interés")
-    rol: Optional[str] = Field(default="usuario_regular", description="Rol: usuario_regular, pyme, administrador")
+    rol: Optional[int] = Field(default=1, description="Rol: 1 (regular), 2 (pyme), 3 (admin)")
+
+    @field_validator('contraseña')
+    @classmethod
+    def validar_contrasena_segura(cls, v: str) -> str:
+        """Valida que la contraseña cumpla los requisitos de seguridad."""
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('La contraseña debe contener al menos una letra mayúscula')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('La contraseña debe contener al menos una letra minúscula')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('La contraseña debe contener al menos un número')
+        if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"|,.<>\/?]', v):
+            raise ValueError('La contraseña debe contener al menos un carácter especial (!@#$%^&*...)')
+        return v
 
 
 class UserLogin(BaseModel):
     """Esquema para el inicio de sesión."""
     correo: str = Field(..., description="Correo electrónico registrado")
     contraseña: str = Field(..., description="Contraseña del usuario")
+
+
+class UserSocialLogin(BaseModel):
+    """Esquema para el inicio de sesión social."""
+    provider: str = Field(..., description="Proveedor (google o facebook)")
+    id_token: Optional[str] = Field(None, description="Token de identidad del proveedor")
+    # Para la simulación, permitiremos enviar datos básicos
+    nombre: Optional[str] = None
+    correo: Optional[str] = None
 
 
 class Token(BaseModel):
@@ -55,8 +79,19 @@ class UserResponse(BaseModel):
     correo: str
     preferencias: Optional[List[str]] = []
     fecha_registro: date
-    rol: str
+    rol: int
+    calificacion_promedio: Optional[float] = 0.0
+    numero_reseñas: Optional[int] = 0
     perfil: Optional[ProfileResponse] = None
+    favorites: List[int] = Field(default=[])
+
+    @field_validator('favorites', mode='before')
+    @classmethod
+    def extract_ids(cls, v):
+        """Convierte lista de objetos Lugar a lista de IDs."""
+        if isinstance(v, list) and len(v) > 0 and hasattr(v[0], 'id_lugar'):
+            return [item.id_lugar for item in v]
+        return v
 
     class Config:
         from_attributes = True
@@ -77,6 +112,8 @@ class UserPublicResponse(BaseModel):
     nombre: str
     preferencias: Optional[List[str]] = []
     fecha_registro: date
+    calificacion_promedio: Optional[float] = 0.0
+    numero_reseñas: Optional[int] = 0
     perfil: Optional[ProfileResponse] = None
 
     class Config:

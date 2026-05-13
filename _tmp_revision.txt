@@ -1,0 +1,361 @@
+Exploro Api inteligente de recomendaciones turísticas locales
+Omar Fabian Acota Pulgarin
+Juan Jose Calvache Ibarra
+Jhon Fredy Moran Quetama
+Universidad cooperativa de colombia Facultad de ingeniería Programa de Ingeniería de software Pasto 2025
+Exploro Api inteligente de recomendaciones turísticas locales
+Omar Fabian Acota Pulgarin Juan Jose Calvache Ibarra Jhon Fredy Moran Quetama
+Informe Final para optar el título de Ingeniero de Software
+Oscar Andrés Osorio
+Universidad Cooperativa De Colombia Facultad De Ingeniería Programa De Ingeniería De Software Pasto 2025
+TABLA DE CONTENIDO Pág TOC \o "1-3" \h \z \u
+1. PROBLEMA DE LA INVESTIGACIÓN PAGEREF _Toc214580829 \h 6
+1.1. Objeto O Tema De Investigación PAGEREF _Toc214580830 \h 6
+1.2. Área De Investigación PAGEREF _Toc214580831 \h 7
+1.3. Línea De Investigación PAGEREF _Toc214580832 \h 7
+1.4. Planteamiento Del Problema PAGEREF _Toc214580833 \h 7
+1.5. Formulación Del Problema PAGEREF _Toc214580834 \h 8
+1.6.1 Objetivo general PAGEREF _Toc214580835 \h 9
+1.6.2 Objetivos específicos PAGEREF _Toc214580836 \h 9
+1.7 Justificación PAGEREF _Toc214580837 \h 10
+1.8 Delimitación PAGEREF _Toc214580838 \h 11
+2. MARCO TEORICO PAGEREF _Toc214580839 \h 12
+2.1 Antecedentes PAGEREF _Toc214580840 \h 18
+2.2 Teorias Generales Del Proyecto PAGEREF _Toc214580841 \h 19
+2.3 Formulación De Hipótesis PAGEREF _Toc214580842 \h 21
+3. METODOLOGÍA DE DESARROLLO DE SOFTWARE PAGEREF _Toc214580843 \h 21
+3.1 Elección De Scrumban PAGEREF _Toc214580844 \h 21
+3.2 Roles Principales PAGEREF _Toc214580845 \h 22
+3.3 Artefactos Y Memorias PAGEREF _Toc214580846 \h 22
+3.2 Herramientas De Apoyo PAGEREF _Toc214580847 \h 23
+3.4 Implementación Iterativa Y Flujo PAGEREF _Toc214580848 \h 23
+3.5 Conclusión PAGEREF _Toc214580849 \h 23
+4. RESULTADOS DE LA INVESTIGACIÓN PAGEREF _Toc214580850 \h 24
+4.1 Levantamiento De Requerimientos PAGEREF _Toc214580851 \h 25
+4.1.1 Requerimientos funcionales PAGEREF _Toc214580852 \h 26
+4.1.2 Requisitos no funcionales PAGEREF _Toc214580853 \h 28
+4.2. Análisis Del Software PAGEREF _Toc214580854 \h 30
+4.2.1. Diagrama de contexto del sistema PAGEREF _Toc214580855 \h 31
+4.2.2. Diagrama de casos de uso del sistema PAGEREF _Toc214580856 \h 32
+4.2.3. Diagrama de actividades del sistema PAGEREF _Toc214580857 \h 34
+4.2.4. Diagrama de secuencia del sistema PAGEREF _Toc214580858 \h 36
+4.2.5. Diagrama de clases del sistema PAGEREF _Toc214580859 \h 39
+4.2.6. Diagrama de componentes PAGEREF _Toc214580860 \h 41
+4.2.7. Modelo entidad–relación del sistema PAGEREF _Toc214580861 \h 43
+RECOMENDACIONES PAGEREF _Toc214580862 \h 45
+CONCLUSION PAGEREF _Toc214580863 \h 46
+Referencias PAGEREF _Toc214580864 \h 48
+TABLA DE ILUSTRACIONES Pág
+TOC \h \z \c "Ilustración" Ilustración 1 Diagrama de contexto del sistema PAGEREF _Toc214581007 \h 31
+Ilustración 2 Diagrama de casos de uso del sistema PAGEREF _Toc214581008 \h 33
+Ilustración 3 Diagrama de actividades del sistema PAGEREF _Toc214581009 \h 35
+Ilustración 4 Diagrama de secuencia del sistema PAGEREF _Toc214581010 \h 37
+Ilustración 5 Diagrama de clases del sistema PAGEREF _Toc214581011 \h 40
+Ilustración 6 Diagrama de componentes PAGEREF _Toc214581012 \h 42
+Ilustración 7 Modelo entidad–relación del sistema PAGEREF _Toc214581013 \h 44
+TABLA DE TABLAS Pág
+TOC \h \z \c "Tabla" Tabla 1 Requisitos Funcionales PAGEREF _Toc214581305 \h 26
+Tabla 2 Requisitos NO Funcionales PAGEREF _Toc214581306 \h 28
+PROBLEMA DE LA INVESTIGACIÓN
+A pesar del potencial turístico de Pasto y de Nariño, la ciudad continúa subrepresentada en plataformas digitales de promoción turística lo que limita su visibilidad frente a destinos más consolidados en Colombia, actualmente aunque existe una oferta turística diversa la información de las pequeñas y medianas empresas locales se encuentra altamente fragmentada y carece de estandarización digital, a falta de adopción de tecnologías de integración limita la difusión de sus servicios, impidiendo que los visitantes accedan a un catálogo consolidado y dificultando la creación de estrategias de promoción inteligentes que conecten la demanda con los prestadores locales. .
+Actualmente, las plataformas de turismo disponibles se centran principalmente en la oferta general de destinos, pero no ofrecen recomendaciones personalizadas que integren intereses, perfiles de usuario, reseñas locales o geolocalización. Esta brecha tecnológica genera que los visitantes tanto turistas como nuevos residentes no encuentren experiencias culturales, gastronómicas y naturales adaptadas a sus preferencias, reduciendo así el aprovechamiento del potencial turístico de Pasto.
+E xiste la necesidad de investigar cómo el diseño y desarrollo de una solución tecnológica inteligente, en forma de una API de consumo, puede contribuir a conectar la oferta de las pymes turísticas locales con la demanda de un público cada vez más digitalizado y exigente en términos de experiencias personalizadas.
+El departamento de Nariño y su capital, San Juan de Pasto, poseen una amplia diversidad de atractivos turísticos asociados al patrimonio cultural, la naturaleza y la gastronomía regional , e ntre ellos se destacan eventos culturales de reconocimiento internacional como el Carnaval de Negros y Blancos, declarado Patrimonio Cultural Inmaterial de la Humanidad por la UNESCO, así como destinos naturales representativos como la Laguna de la Cocha, el Volcán Galeras y diferentes rutas culturales y religi osas que hacen parte de la identidad turística del territorio CITATION UNE09 \l 9226 \m Col24 (UNESCO, 2009; Travel, 2024) .
+En los últimos años el turismo ha venido consolidándose como una actividad económica relevante para la región. Según reportes de medios nacionales y entidades locales durante la temporada del Carnaval de Negros y Blancos de 2025 la ciudad de Pasto recibió cerca de 150.000 visitantes lo que generó un impacto significativo en sectores como la hotelería, la gastronomía, el transporte y el comercio local CITATION INFOBA \l 9226 (Infobae, 2025) , d e igual manera reportes económicos indican que la actividad turística durante las temporadas altas recientes ha representado ingresos importantes para la economía local evidenciando el potencial del sector como motor de desarrollo regional CITATION ELTIEMPO \l 9226 (El Tiempo, 2025) .
+A nivel institucional el turismo también ha sido identificado como un sector estratégico para el desarrollo del departamento , d e acuerdo con el Índice de Competitividad Turística Regional de Colombia , Nariño ha mostrado avances en aspectos relacionados con la gestión del destino, el patrimonio cultural y la sostenibilidad, alcanzando una de sus calificaciones más altas en los últimos años CITATION Gob \l 9226 (Gobernación de Nariño) . E stos avances contrastan con diversos desafíos asociados a la promoción del destino y a la integración de herramientas tecnológicas que permitan mejorar la visibilidad de la oferta turística local.
+Uno de los principales retos identificados en el sector turístico de la región está relacionado con los niveles de digitalización de las pequeñas y medianas empresas que ofrecen servicios turísticos , m uchos emprendimientos locales como restaurantes tradicionales, operadores turísticos, alojamientos rurales o guías culturales, cuentan con una presencia limitada en plataformas digitale, lo que dificulta su posicionamiento frente a otros destinos del país que han logrado consolidar estrategias de promoción basadas en tecnología y marketing digital CITATION Min221 \l 9226 (Ministerio de Comercio, Industria y Turism, 2022) .
+Aunque actualmente existen plataformas digitales que ofrecen información sobre destinos turísticos la mayoría de estas herramientas presentan contenidos generales y no integran de manera eficiente elementos como las preferencias de los usuarios . la geolocalización, las reseñas locales o la personalización de recomendacion es, L os visitantes ya sean turistas nacionales, extranjeros o incluso nuevos residentes pueden tener dificultades para descubrir experiencias culturales, gastronómicas o naturales que se ajusten a sus intereses dentro del territorio.
+En este contexto surge la necesidad de explorar soluciones tecnológicas que permitan mejorar la articulación entre la oferta turística local y las nuevas dinámicas del turismo digital , d esde el campo de la ingeniería de software, el diseño y desarrollo de una solución basada en una API de servicios turísticos podría facilitar la integración y el acceso a información relevante sobre destinos, establecimientos y experiencias disponibles en la ciudad.
+Una herramienta de este tipo permitiría estructurar datos turísticos, integrar funcionalidades de geolocalización, recomendaciones personalizadas y valoraciones de usuarios, contribuyendo así a fortalecer la visibilidad digital de los emprendimientos locales y a mejorar la experiencia de los visitantes , d e esta manera el desarrollo de soluciones tecnológicas orientadas al turismo inteligente puede convertirse en un apoyo importante para la promoción del destino y para el fortalecimiento del ecosistema turístico de Pasto y del departamento de Nariño.
+1.1. Objeto O Tema De Investigación
+El objeto de investigación se centra en el diseño y desarrollo de una solución tecnológica inteligente basada en una API de servicios turísticos, orientada a facilitar la promoción y recomendación personalizada de la oferta turística de la ciudad de Pasto. Esta solución busca integrar información relacionada con intereses de los usuarios, geolocalización y reseñas de experiencias locales, con el propósito de fortalecer la visibilidad digital de las pequeñas y medianas empresas del sector turístico y contribuir a mejorar la experiencia de los visitantes en el destino.
+1.2. Área De Investigación
+La presente investigación se enmarca en la intersección entre la gestión del turismo y la innovación digital, particularmente en el uso de tecnologías de la información para la promoción y gestión de destinos turísticos. En este contexto, el estudio se orienta al diseño de soluciones tecnológicas que permitan fortalecer la competitividad, visibilidad y posicionamiento de destinos emergentes como la ciudad de Pasto.
+1.3. Línea De Investigación
+La línea de investigación se centra en la aplicación de tecnologías de la información al sector turístico, con énfasis en la innovación digital y el desarrollo de soluciones inteligentes que fortalezcan la promoción, visibilidad y competitividad de destinos emergentes como Pasto. Esta línea busca integrar herramientas tecnológicas, como APIs y sistemas de recomendación, para impulsar la digitalización de las pymes turísticas y ofrecer experiencias personalizadas que respondan a las necesidades de un público cada vez más digitalizado.
+1.4. Planteamiento Del Problema
+Colombia cuenta con una gran riqueza natural y cultural que ha favorecido el crecimiento del turismo como un sector estratégico para el desarrollo regiona l, e n este contexto el departamento de Nariño y su capital, San Juan de Pasto, poseen diversos atractivos turísticos como la Laguna de La Cocha, el Santuario de Las Lajas y el Carnaval de Negros y Blancos, este último reconocido como Patrimonio Cultural Inmaterial de la Humanidad por la UNESCO CITATION UNE09 \l 9226 \m Col24 (UNESCO, 2009; Travel, 2024) .
+A pesar de este potencial Pasto presenta una limitada presencia en plataformas digitales de promoción turística lo que reduce su visibilidad frente a otros destinos consolidados del país e sta situación afecta especialmente a las pequeñas y medianas empresas (pymes) del sector turístico local que en muchos casos cuentan con bajos niveles de digitalización para promocionar sus servicios y experiencias.
+Asimismo muchas de las plataformas turísticas existentes se enfocan en mostrar información general de destinos sin integrar aspectos como las preferencias de los usuarios, la geolocalización o las reseñas basadas en experiencias locales , e sto dificulta que los visitantes accedan a información personalizada y descubran de manera eficiente la oferta turística disponible en la ciudad.
+Ante esta situación surge la necesidad de explorar soluciones tecnológicas que permitan mejorar la integración y difusión de la información turística local , e n este sentido el desarrollo de una API de servicios turísticos podría facilitar la conexión entre la oferta de las pymes turísticas de Pasto y la demanda de los visitantes, integrando datos sobre intereses de los usuarios, geolocalización y recomendaciones personalizadas, con el fin de fortalecer la visibilidad digital del destino y mejorar la experiencia turística.
+1.5. Formulación Del Problema
+¿Cómo puede el desarrollo de una API de servicios turísticos contribuir a mejorar la visibilidad digital de las pymes del sector turístico de Pasto y ofrecer recomendaciones personalizadas que fortalezcan la experiencia de los visitantes y la competitividad del destino?
+1.6.1 Objetivo general
+Desarrollar una API RESTful inteligente para la gestión y recomendación de lugares de interés turístico en la ciudad de Pasto, mediante la integración de técnicas de inteligencia artificial para generar recomendaciones personalizadas basadas en las preferencias de los usuarios y permita la interoperabilidad con aplicaciones externas
+1.6.2 Objetivos específicos
+Analizar y definir los requerimientos funcionales y no funcionales del sistema, considerando la lógica de negocio del sector turístico local y los criterios necesarios para una arquitectura de software escalable y compatible con la API y las tecnologías utilizadas en el desarrollo.
+Diseñar la arquitectura de la API y los modelos de datos que permitan gestionar la información de lugares de interés turístico en la ciudad de Pasto, incluyendo atributos como ubicación, categoría, descripción y calificación.
+Implementar los servicios REST de la API para el registro, consulta y gestión de información turística, incorporando un módulo de recomendación basado en inteligencia artificial que genere sugerencias personalizadas a partir de las preferencias o interacciones de los usuarios.
+Desarrollar una aplicación web prototipo que consuma los servicios de la API y realizar pruebas de integración para evaluar su funcionamiento, interoperabilidad y capacidad de respuesta en la generación de recomendaciones turísticas.
+1.7 Justificación
+En el contexto actual de transformación digital el uso de tecnologías de la información y la comunicación (TIC) se ha consolidado como un factor clave para fortalecer la competitividad del sector turístico , e n el departamento de Nariño donde las pequeñas y medianas empresas (pymes) tienen una participación significativa en la oferta turística el acceso a herramientas tecnológicas accesibles y funcionales resulta fundamental para mejorar su visibilidad y presencia en el entorno digital D iversos estudios sobre turismo inteligente destacan que las plataformas digitales y los sistemas de recomendación basados en datos permiten mejorar la experiencia del visitante, optimizar la operación de los servicios y facilitar el acceso a información relevante sobre los destinos CITATION Alv22 \l 9226 \m Min22 (Alvarado & Nardelly, 2022; Ministerio de Comercio, Industria y Turismo, 2022) . M uchas pymes turísticas en la ciudad de Pasto presentan limitaciones de recursos, conocimientos técnicos e infraestructura, lo que reduce su capacidad de promoción y comercialización en medios digitales.
+E l desarrollo de u n a API de servicios turísticos se plantea como una solución viable , escalable y eficiente para dinamizar la actividad turística en Past o, e sta infraestructura centraliza y estructura un catálogo dinámico de experiencias, lugares de interés y servicios turísticos, permitiendo que aplicaciones móviles o web accedan a información actualizada y estructurada. También incorpora mecanismos de personalización basados en el perfil del usuario, geolocalización, tipo de experiencia deseada y reseñas reales de visitantes, generando recomendaciones precisas que enriquecen la experiencia turística.
+La implementación de reseñas como componente central busca recuperar la confianza de los nuevos visitantes, guiándolos mediante experiencias auténticas que validan la calidad de los servicios. Esto fortalece la reputación de los destinos locales y proporciona a las empresas retroalimentación útil para su mejora continua.
+Para garantizar la confianza y credibilidad de la información que se obtenga a través de esta API se incorpora un modelo de gobernanza de datos robusto, respaldado por entidades clave del sector turístico de la región , d icho modelo contempla la validación y aval permanente de la información por parte de entidades gubernamentales (Gobernación de Nariño y Alcaldía de Pasto), la Cámara de Comercio de Pasto instituciones turísticas y operadores turísticos registrados , e ste respaldo institucional asegura la calidad, veracidad, actualización y relevancia de los datos, alineándose con las mejores prácticas de los Destinos Turísticos Inteligentes (DTI) promovidas a nivel nacional e internacional donde la gobernanza se constituye en uno de los pilares fundamentales para el desarrollo de plataformas confiables.
+Así la API no solo facilita el acceso a información turística estructurada y personalizada, sino que genera un ecosistema digital confiable que potencia la visibilidad de las pymes, promueve un turismo más competitivo y sostenible, y contribuye al desarrollo económico de la región de Nariño.
+1.8 Delimitación
+El presente proyecto establece los siguientes límites que definen su alcance y aplicabilidad:
+En primer lugar, el sistema se enfocará exclusivamente en la ciudad de San Juan de Pasto (Nariño, Colombia), considerando en esta fase inicial únicamente los lugares turísticos ubicados en el área urbana , p or ende no se incluirán corregimientos ni zonas rurales aledañas, lo que delimita la cobertura geográfica del sistema en su primera versión.
+Desde el punto de vista tecnológico la solución se desarrollará mediante herramientas de software libre y de código abierto orientadas al desarrollo de servicios web , e n particular se utilizarán frameworks para la construcción de APIs RESTful, como Django REST Framework o FastAPI, y un sistema gestor de bases de datos con soporte geoespacial, como PostgreSQL con la extensión PostGIS, que permitirá almacenar y consultar información relacionada con la ubicación de los lugares turísticos.
+En relación con las funcionalidades del sistema la API permitirá gestionar información sobre lugares de interés turístico, incluyendo operaciones de registro, consulta y recomendación de sitios dentro de la ciudad , S e incorporará un sistema básico de recomendaciones basado en categorías, geolocalización y valoraciones de usuarios. E n esta primera versión no se contemplará la implementación de algoritmos avanzados de aprendizaje automático.
+Finalmente el sistema estará orientado principalmente a turistas, estudiantes foráneos y nuevos residentes de la ciudad de Pasto que buscan información para explorar la oferta turística local , la API podrá beneficiar a las pequeñas y medianas empresas (pymes) del sector turístico, al facilitar la visibilidad de sus servicios en plataformas digitales que consuman la información proporcionada por el sistema.
+Cabe señalar que quedan fuera del alcance de este proyecto funcionalidades como la reserva de servicios turísticos, la gestión de pagos electrónicos o la integración directa con plataformas externas de transporte, hospedaje o comercio electrónico.
+2. MARCO TEORICO
+2.1 Antecedentes
+Turismo en Pasto y Nariño: Potencial y desafíos
+El departamento de Nariño y su capital Pasto, poseen una amplia riqueza cultural, natural y patrimonial que los posiciona como destinos turísticos emergentes en Colombia, entre sus principales atractivos destacan el Carnaval de Negros y Blancos, declarado Patrimonio Cultural Inmaterial de la Humanidad por la UNESCO, la Laguna de La Cocha, el Santuario de Las Lajas y una variada oferta gastronómica y artesanal que refleja la identidad regional CITATION Tur23 \l 9226 (Turismo Pasto, 2023) .
+En los últimos años, el turismo en Nariño ha mostrado un crecimiento sostenido gracias a la diversificación de experiencias que incluyen turismo cultural, religioso, de naturaleza y comunitario, sin embargo persisten desafíos estructurales relacionados con la digitalización de las pymes turísticas, la escasa visibilidad en plataformas globales y la falta de estrategias de promoción integradas. El Sistema de Información Turística de Nariño (SITUR) reporta que, tras la pandemia, el sector enfrenta dificultades para recuperar niveles de ocupación y flujo de visitantes, especialmente en comparación con destinos más consolidados del país, la limitada presencia digital de Pasto y Nariño reduce su competitividad frente a ciudades como Medellín o Cartagena, donde las plataformas tecnológicas han sido clave para atraer turistas CITATION SIT24 \l 9226 (SITUR Nariño, 2024) .
+L a infraestructura tecnológica y de conectividad en la región aún presenta brechas que dificultan la implementación de soluciones innovadoras como sistemas de recomendación personalizados o plataformas de reservas integradas. Esto limita la capacidad de las pymes locales para adaptarse a las tendencias actuales del turismo digital y aprovechar plenamente su potencial CITATION Tur23 \l 9226 \m Tripadvisor (Turismo Pasto, 2023; Tripadvisor, 2025) .
+Impacto de la digitalización en el sector turístico
+La digitalización ha transformado radicalmente el sector turístico en Colombia y el mundo generando nuevas oportunidades para la promoción, comercialización y personalización de experiencias, en los últimos cinco años el uso de tecnologías digitales como plataformas web, aplicaciones móviles, inteligencia artificial y sistemas de geolocalización ha permitido a los destinos turísticos aumentar su visibilidad, mejorar la experiencia del visitante y optimizar la operación de las empresas del sector.
+Según el Ministerio de Comercio, Industria y Turismo (MINCIT), la digitalización ha sido clave para la recuperación del turismo tras la pandemia al facilitar el acceso a información en tiempo real, reservas en línea y estrategias de marketing digital CITATION Min25 \l 9226 (Ministerio de Comercio, Industria y Turismo, 2025) . En 2024 Colombia registró un crecimiento del 30% en la industria de viajes, alcanzando más de US$6 mil millones en reservas gracias a la adopción tecnológica por parte de agencias y proveedores turísticos CITATION Occ25 \l 9226 (Occidente.co, 2025) .
+Iniciativas como el proyecto Turismo 4.0, impulsado por FONTUR y ejecutado por la Fundación Universidad del Valle, han promovido el uso de tecnologías emergentes para fortalecer la sostenibilidad y competitividad del turismo colombiano CITATION SEI24 \l 9226 (SEI / Fundación Universidad del Valle, 2024) . Estas estrategias incluyen el desarrollo de APIs, análisis de datos, automatización de procesos y herramientas de recomendación inteligente.
+En este contexto la digitalización no solo mejora la eficiencia operativa, sino que también empodera a las pymes turísticas, permitiéndoles competir en igualdad de condiciones con grandes operadores, la transformación digital se convierte así en un eje estratégico para el desarrollo turístico sostenible, especialmente en regiones emergentes como Pasto y Nariño.
+Necesidad de soluciones inteligentes basadas en APIs
+En el contexto turístico actual las pymes locales enfrentan grandes retos para integrarse a la economía digital, la falta de plataformas propias y la escasa capacidad de inversión en innovación tecnológica hacen necesario el uso de soluciones inteligentes basadas en APIs, que permitan la interoperabilidad con aplicaciones externas y la personalización de experiencias en tiempo real.
+Las APIs RESTful y arquitecturas de microservicios se han consolidado como estándares que facilitan la escalabilidad y la integración de sistemas, ofreciendo flexibilidad para que pequeñas empresas puedan conectarse a ecosistemas digitales más amplios CITATION Fow21 \l 9226 (Fowler M. &., 2021) .
+Los sistemas de recomendación integrados en APIs permiten procesar datos de usuarios, reseñas y geolocalización para ofrecer experiencias personalizadas, lo que incrementa la competitividad de destinos emergentes frente a mercados más consolidados CITATION Ric221 \l 9226 (Ricci, Recommender Systems Handbook, 2022) .
+En Colombia, iniciativas como el proyecto Turismo 4.0 han demostrado que la adopción de APIs y tecnologías digitales es clave para fortalecer la visibilidad de las pymes turísticas y dinamizar la economía regional CITATION Min25 \l 9226 (Ministerio de Comercio, Industria y Turismo, 2025) .
+Las APIs inteligentes representan una solución estratégica para superar las limitaciones de digitalización de las pymes turísticas, integrando datos heterogéneos y ofreciendo recomendaciones adaptadas a las necesidades de los visitantes.
+Plataformas de promoción turística existentes en Colombia
+En Colombia la promoción turística se ha apoyado en diversas plataformas digitales que buscan visibilizar los destinos del país a nivel nacional e internacional, entre las más destacadas se encuentra Colombia.travel , el portal oficial de ProColombia, que ofrece información sobre regiones, experiencias, eventos y rutas temáticas, esta plataforma ha sido clave para posicionar destinos como Cartagena, Medellín y Bogotá, pero aún presenta limitaciones en la personalización de contenidos para regiones emergentes como Pasto CITATION Pro25 \l 9226 (ProColombia, 2025) .
+A nivel regional, existen iniciativas como SITUR Nariño, que recopilan datos estadísticos y ofrecen directorios turísticos locales. Sin embargo, su enfoque es mayormente informativo y no incorpora funcionalidades avanzadas como sistemas de recomendación o integración con aplicaciones móviles CITATION SIT24 \l 9226 (SITUR Nariño, 2024) .
+También se han desarrollado plataformas privadas como Turismo Pasto, que promueven atractivos locales mediante blogs, galerías y reseñas. Aunque estas iniciativas aportan visibilidad, su alcance suele ser limitado por la falta de interoperabilidad con sistemas externos y la ausencia de motores inteligentes de personalización CITATION Tur23 \l 9226 (Turismo Pasto, 2023) .
+En este panorama se evidencia una fragmentación de la oferta digital donde cada plataforma opera de forma aislada sin compartir datos ni ofrecer experiencias integradas, esta situación limita la capacidad de las pymes turísticas para conectarse con audiencias digitales y aprovechar el potencial de herramientas como APIs, inteligencia artificial o geolocalización.
+Por ello el desarrollo de una API inteligente como EXPLORO representa una oportunidad para articular estas plataformas, enriquecer sus funcionalidades y ofrecer recomendaciones personalizadas que respondan a los intereses reales de los visitantes.
+Brechas tecnológicas en la personalización de experiencias turísticas
+La personalización de experiencias turísticas se ha convertido en un factor clave para la competitividad de los destinos. Sin embargo, en regiones emergentes como Pasto y Nariño persisten brechas tecnológicas que dificultan la implementación de sistemas avanzados de recomendación. Estas brechas se relacionan principalmente con la falta de infraestructura digital, la escasa capacitación en tecnologías de la información y la limitada inversión en innovación por parte de las pymes turísticas CITATION UNC21 \l 9226 (UNCTAD, 2021) .
+En muchos casos las plataformas locales ofrecen información estática y generalizada sin incorporar algoritmos de inteligencia artificial o análisis de datos que permitan adaptar las recomendaciones a los intereses individuales de los visitantes, esto genera una experiencia homogénea que no responde a las expectativas de un público cada vez más digitalizado CITATION Gar22 \l 9226 (García, 2022) .
+La ausencia de integración con herramientas de procesamiento de lenguaje natural y análisis de reseñas limita la capacidad de los sistemas para capturar percepciones cualitativas de los turistas. Mientras que grandes plataformas globales como TripAdvisor o Booking ya utilizan estos mecanismos, las iniciativas locales aún dependen de modelos básicos de categorización y geolocalización CITATION Ric221 \l 9226 (Ricci, Recommender Systems Handbook, 2022) .
+Las brechas tecnológicas en la personalización de experiencias turísticas no solo afectan la satisfacción del visitante, sino que también reducen la competitividad de las pymes locales frente a destinos más tecnificados. Superar estas limitaciones requiere la adopción de APIs inteligentes, capacitación en analítica de datos y estrategias de interoperabilidad que permitan conectar la oferta local con las tendencias globales.
+2.2 Teorias Generales Del Proyecto
+El proyecto se fundamenta en diversas teorías y tecnologías que orientan su diseño y aplicación. Entre ellas se destacan la Teoría de Sistemas de Información, la Teoría del Comportamiento del Usuario, la Teoría de Recomendación y la Teoría de Geolocalización y SIG .
+A nivel tecnológico, el proyecto se apoya en herramientas orientadas al desarrollo de APIs como FastAPI y sistemas de bases de datos como PostgreSQL con PostGIS, las cuales permiten garantizar escalabilidad, eficiencia y capacidad de procesamiento geoespacial dentro de la API EXPLORO.
+Teoría de Sistemas de Información
+La Teoría de Sistemas de Información sostiene que las organizaciones mejoran su desempeño al integrar sistemas digitales que procesan y transforman datos en conocimiento útil, en el turism o, estos sistemas permiten centralizar información de visitantes, destinos y servicios, facilitando la personalización de experiencias y la competitividad de las pymes CITATION Lau14 \l 9226 (Laudon, 2014) .
+En el caso de Exploro API, esta teoría se aplica al organizar reseñas, datos geo espaciales y preferencias de los usuarios en un sistema central, permitiendo generar recomendaciones personalizadas que fortalecen la visibilidad digital de Pasto CITATION SIT24 \l 9226 (SITUR Nariño, 2024) .
+Teoría del Comportamiento del Usuario
+La Teoría del Comportamiento del Usuario explica cómo las decisiones de los individuos están influenciadas por sus preferencias, experiencias previas, contexto social y características personales, en el turismo comprender este comportamiento es clave para diseñar sistemas que ofrezcan recomendaciones ajustadas a los intereses reales de los visitantes CITATION Aut16 \l 9226 (Autor: Kotler, 2016) .
+En proyectos como Exploro API esta teoría se implementa mediante el an álisis de preferencias e interacciones de los usuarios , permitiendo generar recomendaciones personalizadas que mejoran la experiencia turística y fortalece r la competitividad de las pymes locales CITATION Cre19 \l 9226 (Crespo Jareño, 2019) .
+Teoría de Recomendación
+La Teoría de Recomendación se basa en algoritmos que analizan preferencias, comportamientos y similitudes entre usuarios para sugerir opciones relevantes, estos sistemas permiten personalizar experiencias según gustos individuales, mejorando la satisfacción del visitante CITATION Ric222 \l 9226 (Ricci, Recommender Systems Handbook (3ª ed.), 2022) .
+Exploro API aplica esta teoría mediante filtros por categoría, ubicación y reseñas, ofreciendo recomendaciones ajustadas al perfil del usuario . CITATION SIT24 \l 9226 (SITUR Nariño, 2024) .
+Teoría de Geolocalización y Sistemas de Información Geográfica (SIG)
+La geolocalización permite identificar la posición exacta de un usuario o destino turístico mediante coordenadas GPS. Combinada con los Sistemas de Información Geográfica (SIG) esta tecnología facilita el análisis espacial, la planificación de rutas y la personalización de experiencias en función de la cercanía y el contexto CITATION Rub21 \l 9226 (Rubio Forero, 2021) .
+En turismo los SIG se utilizan para mapear atractivos, optimizar recorridos y tomar decisiones basadas en datos geográficos, esto mejora la experiencia del visitante y permite a las pymes locales posicionarse estratégicamente en plataformas digitales CITATION Tej21 \l 9226 (Tejada, 2021) .
+Exploro API aplica esta teoría al integrar coordenadas, filtros por proximidad y visualización de mapas, lo que permite recomendar lugares turísticos cercanos al usuario en tiempo real. Así la geolocalización no solo mejora la precisión de las sugerencias, sino que también fortalece la visibilidad digital de destinos emergentes como Pasto CITATION MiM24 \l 9226 (Mundo, 2024) .
+FastAPI como framework para desarrollo del backend
+FastAPI es un framework moderno de desarrollo backend basado en Python, diseñado para la creación de APIs RESTful de alto rendimiento. Se caracteriza por su rapidez, facilidad de uso y soporte nativo para tipado estatico mediante Python typing, lo que permite validar datos automáticamente y generar documentación interactiva.
+En el contexto de EXPLORO, FastAPI se utiliza como el núcleo del sistema backend encargado de gestionar la lógica del negocio, procesar solicitudes HTTP y exponer endpoints que permiten el consumo de información turística por aplicaciones externas.
+U na de sus principales ventajas es la generación automática de documentación mediante Swagger y ReDoc, lo cual facilita la validación , pruebas e integración de la API con otros sistemas.
+PostgreSQL como sistema gestor de base de datos PostgreSQL es un sistema de gestión de bases de datos relacional de código abierto, reconocido por su robustez, escalabilidad y soporte para datos complejos, en este proyecto se emplea junto con la extensión PostGIS, que permite el manejo de datos geoespaciales.
+Esto permite implementar funcionalidades como búsqueda por proximidad, filtrado geográfico y recomendaciones basadas en la ubicación del usuario, elementos fundamentales en sistemas turísticos inteligentes.
+L a combinación de FastAPI y PostgreSQL permite construir una arquitectura eficiente, escalable y orientada a servicios, alineada con los objetivos del proyecto EXPLORO.
+Tecnologías cliente para consumo de la API
+Aunque el enfoque principal del proyecto es el desarrollo de un API RESTful, esta puede ser consumida por un sistema cliente desarrollados con tecnologías como HTML, CSS, JavaScript o Frameworks como React, Next.js etc. Estas tecnologías permiten construir interfaces que consumen los servicios expuestos por la API, pero no forma parte del nucleo del sistema, el cual está centrado en la lógica backend y la gestión de datos.
+2.3 Formulación De Hipótesis
+Grupo
+Tema
+Posible Hipótesis
+-Juan José Calvache
+-Omar Acosta
+-Jhon Fredy Moran
+API Inteligente de Recomendaciones Turísticas Locales para Nuevos Llegados a Pasto (EXPLORO)
+El desarrollo de una API inteligente de recomendaciones turísticas locales para la ciudad de Pasto, aporta a las Pymes en cuanto a su visibilidad, digitalización y a la personalización de experiencias que se ofrecen a turistas que visiten esta región.
+METODOLOGÍA DE DESARROLLO DE SOFTWARE
+3.1 Elección De Scrumban
+Para el desarrollo de la API inteligente de recomendaciones turísticas locales se seleccionó la metodología ágil híbrida Scrumban , e sta metodología combina la estructura y definición de roles de Scrum con la flexibilidad y el enfoque en el flujo continuo de trabajo que proporciona Kanban.
+Scrumban resulta especialmente adecuada para equipos pequeños, como el conformado por tres integrantes en este proyecto, ya que permite mantener roles claros y entregas iterativas, al tiempo que facilita una rápida adaptación a cambios en los requerimientos, tales como la integración de nuevas fuentes de datos turísticos o mejoras en los algoritmos de personalización de recomendaciones según el perfil y ubicación del usuario , e sta combinación reduce la rigidez de los sprints tradicionales y evita la saturación del equipo mediante límites de trabajo en progreso (WIP limits), promoviendo un desarrollo más eficiente y adaptable CITATION scrumban \l 9226 (Ladas, Scrumban: Essays on Kanban systems for lean software development, 2009) .
+3.2 Roles Principales
+Dado que el equipo de desarrollo está conformado únicamente por tres integrantes, los roles se definieron de manera clara pero flexible, permitiendo que todos los miembros participen activamente en las diferentes responsabilidades según las necesidades de cada sprint.
+Product Owner: Es el responsable de maximizar el valor del producto mediante la priorización del Product Backlog y la definición de las funcionalidades clave tales como las recomendaciones basadas en geolocalización, la integración con servicios de mapas y los mecanismos de personalización de resultados según el perfil y preferencias del usuario . Esta función es asumida de forma rotativa o compartida entre los tres integrantes.
+Scrum Master: Se encarga de facilitar el proceso ágil velar por el cumplimiento de las prácticas de Scrumban, remover impedimentos y apoyar en la resolución de problemas técnicos, como dificultades de despliegue, pruebas de integración o configuración del entorno. Esta responsabilidad también es compartida entre los miembros del equipo.
+Equipo de Desarrollo: Conformado por los tres integrantes del proyecto, este rol es el núcleo operativo , s us responsabilidades incluyen el diseño de la base de datos, el desarrollo de los endpoints de la API, la implementación de funcionalidades, la realización de pruebas unitarias e integración, así como la documentación técnica básica.
+La asignación flexible de roles permitió una distribución equilibrada de responsabilidades y una mayor colaboración, adaptándose a la limitación de contar solo con tres personas en el equipo CITATION Sch20 \l 9226 (Schwaber & Jeff, 2020) .
+3.3 Artefactos Y Memorias
+Los principales artefactos que aplicaremos al proyecto serán el Product Backlog, que contendrá las funcionalidades priorizadas como búsqueda de lugares turísticos cercanos, filtrado por categorías (restaurantes, parques, museos) y sistema de recomendaciones inteligentes. El Tablero Kanban en Trello nos permitirá visualizar el avance de las tareas organizadas en columnas de Pendiente, En Progreso y Finalizado , facilitando la transparencia en el trabajo. Finalmente, definiremos una Definition of Done (DoD) específica para nuestro API, que incluirá como criterios mínimos: endpoint funcional, pruebas ejecutadas en Postman y documentación básica .
+3.2 Herramientas De Apoyo
+Para la gestión , organización y ejecución técnica del proyecto se utilizaron diversas herramientas que facilitaron el trabajo colaborativo de los tres integrantes del equipo , e stas herramientas permitieron una planificación visual, control de versiones, comunicación fluida, documentación centralizada y pruebas eficientes de la API , e ntre las herramientas principales se destacan:
+Trello: Utilizado como tablero Kanban para planificar tareas, visualizar el progreso del proyecto y gestionar el flujo de trabajo mediante columnas de Pendiente, En Progreso y Finalizado.
+GitHub: Empleado para el control de versiones, trabajo colaborativo en el código fuente y gestión del repositorio del proyecto.
+Discord: Plataforma principal de comunicación y coordinación diaria entre los tres miembros del equipo.
+Notion: Usado para la documentación técnica del proyecto, centralización de información y registro de decisiones importantes.
+Postman: Herramienta para realizar pruebas de endpoints, validación de servicios backend y documentación interactiva de la API.
+Visual Studio Code: Entorno de desarrollo integrado (IDE) principal utilizado para la programación.
+FastAPI: Framework principal para el desarrollo de la API RESTful en Python, seleccionado por su alto rendimiento, facilidad de uso y excelente soporte para la creación de endpoints asíncronos.
+La combinación de estas herramientas permitió a un equipo reducido de tres personas mantener una alta productividad, trazabilidad y calidad en el desarrollo de la API inteligente de recomendaciones turísticas.
+3.4 Implementación Iterativa Y Flujo
+E l desarrollo de la API se organizó en sprints cortos de una a dos semanas, gestionados principalmente mediante el tablero Kanban en Trello , c ada sprint produjo una versión funcional e incrementada del API, incorporando nuevos endpoints o mejoras sobre los existentes. El flujo de trabajo siguió un esquema híbrido que combinó las iteraciones definidas de Scrum con la visualización continua y los límites de trabajo en progreso propios de Kanban , e sta aproximación permitió evitar la saturación del equipo de tres integrantes y mantener un ritmo constante de desarrollo.
+Por ejemplo, en el primer sprint se entregó el endpoint básico de recomendaciones por ubicación geográfica, mientras que en sprints posteriores se incorporaron filtros por categorías y la integración con servicios de mapas externos CITATION scrumban \l 9226 (Ladas, Scrumban: Essays on Kanban systems for lean software development, 2009) .
+3.5 Conclusión
+La implementación de Scrumban en este proyecto permitirá un desarrollo ordenado y flexible, en el cual la priorización de tareas y la adaptación al cambio sean factores claves. El uso de Trello como tablero principal garantizará la transparencia y el seguimiento del avance del equipo, mientras que herramientas como GitHub y Postman complementarán el control de versiones y las pruebas de la API. De esta forma, podremos asegurar entregas frecuentes y funcionales, respondiendo a las necesidades reales de los usuarios locales que buscan recomendaciones turísticas personalizadas.
+4. RESULTADOS DE LA INVESTIGACIÓN
+La investigación y desarrollo del proyecto permitieron obtener los siguientes resultados:
+Validación del análisis y diseño del sistema: Se verificó que los requisitos funcionales y no funcionales fueron correctamente interpretados y modelados. Los diagramas, arquitectura y modelos conceptuales reflejan una solución coherente, escalable y alineada con los objetivos planteados.
+Construcción de un prototipo operativo funcional: Se implementó una API capaz de gestionar información turística, usuarios, reseñas, geolocalización y recomendaciones, cumpliendo con las funcionalidades básicas esperadas para esta fase del proyecto.
+Pruebas técnicas exitosas; Las pruebas de rendimiento, carga y funcionamiento demostraron que el sistema es estable, procesando solicitudes y consultas dentro de tiempos adecuados para un entorno de desarrollo.
+Avance parcial en analítica predictiva: Aunque el modelo de predicción no fue implementado completamente, se dejó un plan claro basado en regresión lineal que permitirá incorporar la analítica avanzada en futuras versiones del sistema.
+Identificación del impacto potencial en el sector turístico: Se evidenció que la API puede mejorar la visibilidad de las pymes turísticas mediante su integracion con aplicaciones externas
+Fundamentos para una segunda fase del proyecto: Los resultados obtenidos permiten plantear mejoras técnicas, de usabilidad y de analítica, orientadas a una próxima etapa donde se evaluará el impacto real del sistema con usuarios finales y negocios locales
+4.1 Levantamiento De Requerimientos
+El levantamiento de requerimientos permitió comprender a profundidad las necesidades del usuario, las características del entorno turístico local y las limitaciones técnicas del proyecto. Este proceso sirvió como base para estructurar los aspectos funcionales y no funcionales del sistema, orientando el diseño, la arquitectura y la implementación del prototipo EXPLORO. Con esta etapa se consolidaron los lineamientos que guiaron el desarrollo y se aseguraron los criterios necesarios para construir una solución coherente, escalable y alineada con los objetivos del proyecto.
+4.1.1 Requerimientos funcionales
+Los requerimientos funcionales permiten establecer de manera clara y estructurada todas las acciones que el sistema EXPLORO debe realizar para ofrecer recomendaciones, gestionar usuarios, administrar lugares turísticos y registrar reseñas. A través del levantamiento de estos RF se definió qué funciones son esenciales para garantizar una operación completa del sistema, asegurando que el prototipo desarrollado responda a las necesidades identificadas en el análisis del negocio y en la experiencia esperada por los usuarios y pymes turísticas.
+Tabla SEQ Tabla \* ARABIC 1 Requisitos Funcionales
+ID
+Requerimiento Funcional
+Descripción
+RF1
+Registro y autenticación de usuarios
+La API debe permitir la creación de cuentas y el inicio de sesión seguro, gestionando credenciales e identidad de los usuarios.
+RF2
+Actualización de perfil
+Los usuarios deben poder modificar su información básica, como nombre, correo electrónico y preferencias de búsqueda o intereses turísticos.
+RF3
+Gestión de lugares turísticos
+La API debe permitir registrar, consultar, actualizar y eliminar información de los lugares turísticos disponibles en el sistema o gestionados por la API .
+RF4
+Información detallada de lugares
+Cada lugar turístico debe incluir nombre, descripción, categoría, ubicación geográfica (coordenadas), fotografías y calificación promedio.
+RF5
+Registro de reseñas
+Los usuarios podrán publicar reseñas y calificar los lugares que han visitado, añadiendo comentarios y valoraciones numéricas.
+RF6
+Cálculo de calificación promedio
+El sistema debe calcular automáticamente la calificación promedio de cada lugar en función de las reseñas registradas.
+RF7
+Recomendaciones basadas en filtros
+La API debe recomendar lugares considerando filtros como categorías, popularidad, calificaciones o cercanía geográfica.
+RF8
+Recomendaciones personalizadas
+El sistema debe generar sugerencias personalizadas basadas en los intereses del usuario o en su comportamiento a través de las solicitudes realizadas a la API.
+RF9
+Identificación de lugares cercanos
+La API debe permitir obtener lugares turísticos cercanos mediante el uso de coordenadas geográficas del usuario.
+RF10
+Consultas por radio de búsqueda
+El sistema debe permitir buscar lugares en un rango de distancia (por ejemplo, lugares a menos de 2 km).
+4.1.2 Requisitos no funcionales
+Los requerimientos no funcionales complementan la definición del sistema al establecer criterios de calidad, rendimiento, seguridad, disponibilidad y usabilidad que debe cumplir EXPLORO para funcionar de forma confiable. Estos RNF proporcionan los lineamientos que guiaron la arquitectura técnica, las consideraciones de seguridad y la elección de herramientas, garantizando que el sistema no solo cumpla funciones específicas, sino que lo haga con eficiencia, estabilidad y buena experiencia de uso.
+Tabla SEQ Tabla \* ARABIC 2 Requisitos NO Funcionales
+ID
+Requerimiento No Funcional
+Observaciones
+RNF1
+Usabilidad
+La API debe ser fácil de consumir, con endpoints bien documentados, consistentes y comprensibles para desarrolladores.
+RNF2
+Rendimiento
+Las búsquedas, recomendaciones y consultas deben responder en pocos segundos (< 3s). La API debe soportar carga moderada sin degradación significativa.
+RNF3
+Fiabilidad y consistencia
+Los datos de lugares, reseñas y usuarios deben almacenarse de forma coherente. No deben existir duplicados o inconsistencias entre registros.
+RNF4
+Seguridad
+Todo acceso deberá estar protegido con autenticación. La comunicación debe estar cifrada (HTTPS). Los datos sensibles deben resguardarse.
+RNF5
+Portabilidad
+La API debe poder ser consumida desde cualquier cliente (web, móvil o escritorio) mediante protocolos estándar HTTP.
+RNF6
+Escalabilidad
+La arquitectura debe soportar crecimiento en la cantidad de lugares, usuarios y solicitudes, sin perder rendimiento al escalar a nuevas zonas turísticas.
+RNF7
+Mantenibilidad
+El sistema debe tener un código modular, documentado y fácil de extender (nuevas funciones como IA avanzada, nuevos mapas, nuevas categorías).
+RNF8
+Precisión del sistema de recomendación
+Los algoritmos de recomendación deben tener un nivel aceptable de precisión (MAPE < 20% en predicción simple según pruebas).
+RNF9
+Disponibilidad
+El sistema debe estar disponible durante los horarios operativos principales. Las actualizaciones deben realizarse sin interrumpir experiencia de consumo de la API por parte de sistemas cliente.
+RNF10
+Compatibilidad
+La API debe ser compatible con múltiples clientes y sistemas externos que consuman servicios REST..
+4.2. Análisis Del Software
+Con los requerimientos definidos se realizó el análisis y diseño del sistema EXPLORO -API Inteligente de Recomendaciones Turísticas, con el fin de garantizar que la solución propuesta cumpla con las necesidades funcionales y técnicas del proyecto, en esta etapa se elaboraron diagramas UML y modelos arquitectónicos que describen la estructura, comportamiento e interacciones del sistema.
+Se utilizó un enfoque híbrido, combinando la notación UML tradicional, el modelo C4 y el modelo de vistas 4+1, para representar el sistema desde diferentes perspectivas. Este análisis permitió validar la coherencia del diseño, definir los componentes clave y establecer una base sólida para la implementación CITATION Kruchten1995 \l 9226 (Kruchten, 1995)
+4.2.1. Diagrama de contexto del sistema
+El Diagrama de Contexto del Sistema correspondiente al Nivel 1 del Modelo C4 tiene como objetivo establecer el alcance del proyecto EXPLORO y definir las interacciones entre el sistema central y los actores o entidades externas que participan en el flujo de negocio. A diferencia de los diagramas UML que modelan el comportamiento interno el DCS se enfoca en el quién y el qué del intercambio de información CITATION C4M21 \l 9226 (C4 Model (Richardson, 2021)
+Ilustración SEQ Ilustración \* ARABIC 1 Diagrama de contexto del sistema
+Fuente esta investigación a partir de CITATION Fie00 \m ilustracion1Luc1 \l 9226 (Fielding, Architectural Styles and the Design of Network-based Software Architectures., 2000; Lucidchart, s.f.)
+El Diagrama de Contexto delimita claramente el sistema EXPLORO y muestra cómo se relaciona con los actores externos que intervienen en la operación del servicio, representa de forma simple los flujos de información esenciales como consultas, actualizaciones y consumo de datos, evidenciando el papel central de la API como intermediaria entre usuarios, PYMEs y servicios externos. Con esta vista de alto nivel el modelo describe con precisión el entorno en el que opera EXPLORO y las dependencias necesarias para su funcionamiento.
+4.2.2. Diagrama de casos de uso del sistema
+El Diagrama de Casos de Uso UML representa la vista de alto nivel de los requisitos funcionales del sistema EXPLORO mostrando las interacciones esenciales entre los actores externos y la funcionalidad proporcionada por la API Inteligente de Recomendaciones Turísticas, este diagrama define el comportamiento que el sistema debe exhibir para cumplir con sus objetivos.
+Ilustración SEQ Ilustración \* ARABIC 2 Diagrama de casos de uso del sistema
+Fuente esta investigación a partir de CITATION Fie001 \l 9226 \m LucidChart (Fielding, Architectural Styles, 2000; Lucidchart, s.f.)
+El Diagrama de Casos de Uso organiza la funcionalidad del sistema de manera modular mostrando cómo se estructuran y reutilizan los procesos clave mediante relaciones de inclusión y extensión, la separación entre comportamientos obligatorios y opcionales permite un diseño claro y escalable mientras que la asignación precisa de funciones a cada actor asegura una correcta distribución de responsabilidades, en conjunto el diagrama ofrece una visión ordenada y coherente del funcionamiento esencial de EXPLORO y de cómo sus casos de uso se articulan de forma consistente con las necesidades del negocio CITATION OMG \l 9226 (Object Management Group (OMG), 2017) .
+4.2.3. Diagrama de actividades del sistema
+El Diagrama de Actividades UML modela la dinámica del sistema centrándose en el flujo de control o el proceso de negocio, en el contexto de la API EXPLORO este diagrama representa el flujo de trabajo principal que va desde que un usuario realiza una solicitud atravès de un cliente que consume la API. Se emplearon carriles ( Swimlanes ) para delimitar la responsabilidad entre el Usuario y el Sistema (Exploro).
+La estructura del diagrama se adhiere a los estándares definidos por el Object Management Group (OMG) para UML 2.x, asegurando la correcta implementación de la lógica condicional y la concurrencia CITATION OMG \l 9226 (Object Management Group (OMG), 2017) .
+Ilustración SEQ Ilustración \* ARABIC 3 Diagrama de actividades del sistema
+Fuente esta investigación a partir de ( CITATION LucidChart \m Fow14 \l 9226 (Lucidchart, s.f.; Fowler M. &., 2014)
+La modelación del proceso usa correctamente los elementos del estándar UML, el Nodo de Decisión representa la elección del usuario sin duplicar flujos unificando luego el proceso, la inteligencia híbrida se modela con un Fork para ejecutar en paralelo el filtrado geográfico y la personalización por IA, y un Join que sincroniza ambos resultados antes de continuar. Finalmente un segundo Nodo de Decisión controla si, tras una reseña, debe recalcularse la calificación promedio, esta estructura refleja de forma clara y canónica el funcionamiento del sistema de recomendación EXPLORO.
+4.2.4. Diagrama de secuencia del sistema
+El Diagrama de Secuencia (DS) del sistema EXPLORO representa la vista dinámica del proceso mostrando de manera detallada la cronología y el orden exacto en que los actores y los objetos del sistema intercambian mensajes para ejecutar una funcionalidad específica, este diagrama es fundamental porque transforma un caso de uso la descripción funcional del negocio en una secuencia técnica de llamadas a métodos que reflejan cómo se comporta realmente el sistema durante la operación, como parte de los diagramas de interacción de UML y de acuerdo con la especificación del Object Management Group (OMG), el Diagrama de Secuencia debe estructurarse a partir de elementos clave que garanticen claridad temporal y precisión semántica. Entre estos elementos se encuentran las Líneas de Vida (Lifelines) que representan a cada participante a lo largo del tiempo; los Mensajes, que indican la comunicación entre estos participantes y establecen el orden cronológico de las operaciones; y las Activaciones, que muestran los periodos en los que un objeto ejecuta acciones específicas mediante rectángulos sobre la línea de vida. Incorpora Fragmentos Combinados (Combined Fragments), indispensables para modelar la lógica de control del flujo como condiciones alternativas (alt), iteraciones (loop) o referencias reutilizables (ref) CITATION OMG \l 9226 (Object Management Group (OMG), 2017) .
+Ilustración SEQ Ilustración \* ARABIC 4 Diagrama de secuencia del sistema
+Fuente esta investigación a partir de CITATION Lad09 \l 9226 \m Mer (Ladas, 2009; Mermaid, s.f.)
+El Diagrama de Secuencia del flujo “Recibir Recomendaciones Personalizadas” cumple con la semántica UML al modelar correctamente las decisiones mediante un fragmento alt, diferenciando entre usuarios autenticados e invitados, los mensajes y retornos están definidos explícitamente garantizando claridad en la comunicación entre objetos. Las líneas de vida reflejan una arquitectura modular por capas alineada con el patrón Service Layer y el diagrama demuestra que la funcionalidad principal de EXPLORO está estructurada de acuerdo con las buenas prácticas y los estándares definidos por la OMG CITATION Fow14 \l 9226 (Fowler M. &., 2014) .
+4.2.5. Diagrama de clases del sistema
+Según la especificación oficial del Object Management Group (OMG) el Diagrama de Clases es un artefacto fundamental dentro de los diagramas de estructura de UML, cuyo propósito es definir de manera estática los conceptos del sistema, sus atributos, operaciones y las relaciones entre ellos, el estándar establece que una clase debe representarse mediante un rectángulo dividido en compartimentos para el nombre, los atributos y las operaciones, mientras que las asociaciones deben indicar multiplicidades para describir la cardinalidad entre instancias. Se especifica que las relaciones de generalización deben emplearse para modelar herencia entre clases, permitiendo que una subclase herede características estructurales y comportamentales de su superclase CITATION OMG \l 9226 (Object Management Group (OMG), 2017) .
+Ilustración SEQ Ilustración \* ARABIC 5 Diagrama de clases del sistema
+Fuente esta investigación a partir de CITATION Fie00 \l 9226 \m LucidChart (Fielding, Architectural Styles and the Design of Network-based Software Architectures., 2000; Lucidchart, s.f.)
+El Diagrama de Clases de EXPLORO organiza las entidades principales del sistema de forma modular y conforme a UML, identifica correctamente las clases esenciales y utiliza la herencia para especializar a PymeTuristica a partir de Usuario , evitando duplicación de elementos. Establece las asociaciones necesarias entre usuarios, reseñas y establecimientos, reflejando las relaciones del negocio.
+4.2.6. Diagrama de componentes
+El Diagrama de Componentes (DC) es un diagrama de Estructura de UML cuyo objetivo es modelar la vista de implementación y despliegue del sistema. Representa la arquitectura como un conjunto de componentes físicos (módulos de código, bases de datos) y sus dependencias CITATION OMG \l 9226 (Object Management Group (OMG), 2017) .
+Ilustración SEQ Ilustración \* ARABIC 6 Diagrama de componentes
+Fuente esta investigación a partir de CITATION Fow14 \l 9226 \m vis (Fowler M. &., 2014; visual-paradigm online, s.f.)
+El Diagrama de Componentes de EXPLORO cumple con la notación del OMG y respalda la arquitectura de microservicios al dividir el sistema en componentes independientes con responsabilidades bien definidas, El API Gateway centraliza el enrutamiento, mientras que servicios como Recomendaciones, Autenticación y Gestión de Lugares operan de forma aislada para asegurar cohesión y bajo acoplamiento Las interfaces UML de provisión y uso establecen contratos claros de comunicación entre componentes, y la definición explícita de artefactos (.jar) y dependencias refleja la estructura física del sistema. el diagrama demuestra una arquitectura distribuida, modular y lista para despliegue escalable.
+4.2.7. Modelo entidad–relación del sistema
+El Modelo Entidad-Relación representa la vista de datos lógica del sistema EXPLORO, la cual es la base para la implementación de la capa de persistencia (Base de Datos), este modelo traduce las clases de negocio definidas en la fase anterior a entidades de datos y define las restricciones de integridad y las reglas de asociación entre ellas.
+A diferencia de los diagramas UML, el Modelo E-R utiliza su propia notación (notación de la pata de gallo, Chen, o IDEF1X) para especificar cómo se almacenará y recuperará la información CITATION Fow14 \l 9226 (Fowler M. &., 2014) .
+Ilustración SEQ Ilustración \* ARABIC 7 Modelo entidad–relación del sistema
+Fuente esta investigación a partir de CITATION Ric22 \l 9226 \m mir (Ricci, Recommender Systems Handbook., 2022; miro, s.f.)
+El modelo E-R de EXPLORO refleja fielmente las entidades y relaciones definidas en el Diagrama de Clases, asegurando coherencia entre el diseño orientado a objetos y la base de datos cada entidad cuenta con su clave primaria y atributos correspondientes, y las cardinalidades implementan correctamente las reglas del negocio, como las relaciones 1:N entre usuarios, establecimientos y reseñas, se contempla la representación de la herencia de PymeTuristica . La entidad Recomendacion soporta el funcionamiento del motor de IA al almacenar vínculos y puntajes relevantes. El modelo proporciona una estructura de persistencia sólida para gestionar eficientemente los datos del sistema.
+RECOMENDACIONES
+Se recomienda integrar en la siguiente fase del proyecto el módulo de analítica predictiva, implementando el modelo de regresión lineal propuesto con el fin de fortalecer la capacidad del sistema para anticipar comportamientos y apoyar la toma de decisiones. También es conveniente realizar pruebas con usuarios finales —incluyendo turistas, estudiantes y pymes locales— con el objetivo de evaluar la usabilidad, el impacto del consumo de la API por parte de usuarios a través de sistemas cliente , el impacto real de la API en el entorno turístico. Asimismo, es importante optimizar el motor de recomendaciones mediante técnicas avanzadas como filtrado colaborativo o modelos híbridos que incrementen la precisión y relevancia de las sugerencias.
+Otro aspecto clave es trabajar en el escalamiento de la arquitectura mediante contenedores y herramientas de orquestación que permitan un despliegue eficiente y soporten un mayor volumen de datos y solicitudes en el futuro. Se debe continuar fortaleciendo los mecanismos de seguridad, incorporando estrategias de protección de datos, autenticación robusta y monitoreo de accesos. Finalmente, se sugiere ampliar la cobertura de la información turística y desarrollar dashboards gerenciales que permitan a las pymes visualizar indicadores clave de desempeño, facilitando la toma de decisiones basada en datos.
+CONCLUSION
+El desarrollo del proyecto permitió confirmar que la solución propuesta responde de manera efectiva a las necesidades de digitalización y personalización turística en la ciudad de Pasto, se cumplieron a cabalidad los objetivos de análisis y diseño logrando una arquitectura sólida, modelos coherentes y una estructura técnica que integra autenticación, gestión de lugares, reseñas, recomendaciones inteligentes y análisis geoespacial. La etapa de implementación permitió desarrollar un prototipo funcional de la API EXPLORO, validando sus capacidades operativas y evidenciando su potencial para fortalecer la visibilidad digital de las pymes turísticas.
+Asimismo se alcanzaron los objetivos relacionados con la puesta en marcha de la API operativa demostrando mediante pruebas que el sistema puede gestionar adecuadamente información turística generar recomendaciones y permitir interacciones con usuarios y pymes locales, aunque el componente de analítica predictiva avanzó parcialmente se dejó un plan concreto y realista para su integración futura basado en técnicas como la regresión lineal, lo cual permitirá fortalecer aún más la capacidad del sistema para ofrecer recomendaciones inteligentes y anticipar comportamientos de los usuarios.
+Las pruebas técnicas, de funcionamiento y de carga realizadas evidencian la viabilidad del sistema en su estado actual confirmando su rendimiento escalabilidad y comportamiento bajo escenarios de uso moderado, estos resultados aportan una base cuantitativa para las mejoras planificadas en la siguiente fase donde se incorporarán pruebas con usuarios reales ajustes en el motor de recomendaciones y mediciones del impacto directo en los indicadores del sector turístico local.
+EXPLORO constituye una solución tecnológica robusta, viable y escalable, que aporta de manera significativa a la digitalización de Pasto como destino turístico emergente, su diseño modular, su enfoque en la experiencia de consumo de la API por parte de sistemas cliente y su potencial de expansión lo posicionan como un sistema clave para apoyar tanto a visitantes como a las pymes turísticas, impulsando la competitividad del sector y abriendo camino a futuras mejoras basadas en analítica avanzada.
+Es importante resaltar que EXPLORO no se concibe como una aplicación final, sino como una API RESTful diseñada para ser consumida por diferentes sistemas cliente, lo que le otorga flexibilidad, escalabilidad e interoperabilidad.
+Referencias
+BIBLIOGRAPHY (n.d.). Retrieved from Lucidchart: https://lucid.app/lucidchart/512ee435-8c18-4cdc-a815-a09445321661/edit?view_items=bqZ.OHaQ~cEP%2CbqZ.4F8xiLnp%2CbqZ.Ox_fFwoq%2CbqZ.7r.UE1hY%2CbqZ.fBA4CdFp%2CbqZ..WI6F2HL%2CbqZ.R08hq8-m%2C52g~.FBky_eV%2Cz3g~xH_Px9u1%2CbqZ.1nSErgK2%2Cf1g~bq_JZYJE%2Cy2g~1n3s
+(n.d.). Retrieved from Lucidchart: https://www.lucidchart.com/
+(n.d.). Retrieved from Mermaid: https://mermaid.js.org/
+(n.d.). Retrieved from visual-paradigm online: https://online.visual-paradigm.com/w/vtjjohbf/drive/#proj=0&dashboard
+Tripadvisor. (2025, octubre). Las 10 mejores cosas que hacer en Pasto (Actualizado 2025) . Retrieved from Tripadvisor: https://www.tripadvisor.co/Attractions-g677789-Activities-Pasto_Narino_Department.html
+Autor: Kotler, P. &. (2016). Dirección de marketing (15ª ed.). México: Pearson.
+C4 Model (Richardson, S. (2021). Retrieved from The C4 Model for Visualising Software Architecture: https://c4model.com/
+Crespo Jareño, J. A. (2019). Factores que influyen en el comportamiento del turista: estado de la cuestión. Kalpana, Revista de Investigación . Castilla-La Mancha: Universidad de Castilla-La Mancha.
+Docs, M. W. (2023). Responsive design . Retrieved from Mozilla Developer Network: https://developer.mozilla.org/es/docs/Learn/CSS/CSS_layout/Responsive_Design
+Fielding, R. (2000). Architectural Styles.
+Fielding, R. (2000). Architectural Styles and the Design of Network-based Software Architectures.
+Fowler, M. &. (2014). Microservices.
+Fowler, M. &. (2021). Microservices: Principles and Practices. Boston: Addison-Wesley.
+García, M. &. (2022). Transformación digital en las pymes turísticas colombianas. Bogotá: Editorial Universidad Nacional.
+Google Firebase. (2023). Firebase Documentation . Retrieved from Google: https://firebase.google.com/docs
+Kruchten, P. B. (1995). IEEE Software. IEEE Software , 42-50.
+Ladas, C. (2009). Scrumban: Essays on Kanban Systems for Lean Software Development.
+Laudon, K. C. (2014). Sistemas de información gerencial. México: Pearson.
+Microsoft. (2023). TypeScript Handbook . Retrieved from TypeScript Documentation: https://www.typescriptlang.org/docs
+Ministerio de Comercio, Industria y Turismo. (2025, octubre). Informes de turismo . Retrieved from MINCIT: https://www.mincit.gov.co/estudios-economicos/estadisticas-e-informes/informes-de-turismo
+miro . (n.d.). Retrieved from https://miro.com/app/dashboard/
+MUI. (2023). The sx prop . Retrieved from Material UI Documentation: https://mui.com/system/the-sx-prop
+Mundo, M. M. (2024, julio). La importancia de la geolocalización para el turismo . Retrieved from Mi Mundo por el Mundo: https://mimundoporelmundo.com.ar/importancia-de-la-geolocalizacion-para-el-turismo
+Object Management Group (OMG). (2017, Diciembre 05). OMG Unified Modeling Language (OMG UML), Version 2.5.1 . Retrieved from Object Management Group (OMG): https://www.omg.org/spec/UML/2.5.1
+Occidente.co. (2025, octubre). El turismo en Colombia creció 30% impulsado por la digitalización . Retrieved from Occidente.co: https://occidente.co/empresario/turismo-en-colombia-crecimiento-y-digitalizacion/
+ProColombia. (2025, octubre). Colombia.travel: Portal oficial de turismo . Retrieved from Colombia.travel: https://www.colombia.travel/es
+React. (2023). React: A JavaScript library for building user interfaces . Retrieved from Meta Open Source: https://react.dev
+Ricci, F. R. (2022). Recommender Systems Handbook. Cham: Springer.
+Ricci, F. R. (2022). Recommender Systems Handbook (3ª ed.). Nueva York: Springer.
+Ricci, F. R. (2022). Recommender Systems Handbook.
+Rubio Forero, J. F. (2021). Sistemas de información geográfica como herramienta para el estudio y promoción del turismo. Bogotá: Universidad Piloto de Colombia.
+SEI / Fundación Universidad del Valle. (2024, diciembre). Innovando la industria turística con tecnología digital y emprendimiento sostenible en Colombia . Retrieved from SEI: https://www.sei.org/projects/innovando-la-industria-turistica-con-tecnologia-digital-y-emprendimiento-sostenible-en-colombia/
+SITUR Nariño. (2024, diciembre). Sistema de Información Turística de Nariño: estadísticas y publicaciones . Retrieved from SITUR Nariño: https://situr.narino.gov.co
+Tejada, Y. (2021, julio). SIG aplicados al turismo . Retrieved from ArcGIS StoryMaps: https://storymaps.arcgis.com/stories/91a884d4fba342fb9b1262f45de521e2
+Turismo Pasto. (2023, noviembre). Turismo en Nariño y Ecuador: principales atractivos turísticos . Retrieved from Turismo Pasto: https://www.turismopasto.com
+UNCTAD. (2021). Digitalización y desarrollo de capacidades en pymes turísticas. Ginebra: Naciones Unidas.
+W3C. (2023). HTML Standard . Retrieved from World Wide Web Consortium: https://www.w3.org/TR/html
+Alpaydin, E. (2020). Introduction to Machine Learning. MIT Press.

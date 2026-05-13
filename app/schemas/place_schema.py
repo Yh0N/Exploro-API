@@ -12,9 +12,11 @@ class PlaceCreate(BaseModel):
     """Esquema para registrar un nuevo lugar turístico."""
     nombre: str = Field(..., min_length=2, max_length=200, description="Nombre del lugar")
     descripcion: Optional[str] = Field(None, max_length=1000, description="Descripción del lugar")
-    latitud: float = Field(..., ge=-90, le=90, description="Latitud del lugar")
-    longitud: float = Field(..., ge=-180, le=180, description="Longitud del lugar")
-    categoria: str = Field(..., max_length=100, description="Categoría: restaurante, hotel, museo, parque, tour, etc.")
+    latitud: Optional[float] = Field(None, ge=-90, le=90, description="Latitud del lugar (opcional si se provee dirección)")
+    longitud: Optional[float] = Field(None, ge=-180, le=180, description="Longitud del lugar (opcional si se provee dirección)")
+    ubicacion_textual: Optional[str] = Field(None, max_length=300, description="Dirección o descripción de la ubicación para geocodificar")
+    categoria: str = Field(..., max_length=100, description="Categoría principal")
+    subcategoria: Optional[str] = Field(None, max_length=100, description="Subcategoría del lugar")
 
 
 class PlaceUpdate(BaseModel):
@@ -24,6 +26,7 @@ class PlaceUpdate(BaseModel):
     latitud: Optional[float] = Field(None, ge=-90, le=90)
     longitud: Optional[float] = Field(None, ge=-180, le=180)
     categoria: Optional[str] = Field(None, max_length=100)
+    subcategoria: Optional[str] = Field(None, max_length=100)
 
 
 class PlaceResponse(BaseModel):
@@ -36,6 +39,10 @@ class PlaceResponse(BaseModel):
     categoria: str
     aprobado: bool
     calificacion_promedio: Optional[float] = None  # Se calcula dinámicamente con AVG()
+    numero_reseñas: Optional[int] = 0
+    id_usuario: Optional[int] = None
+    host_name: Optional[str] = None
+    host_since: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -166,13 +166,13 @@ def get_current_user(
     return usuario
 
 
-def require_role(roles_permitidos: List[str]):
+def require_role(roles_permitidos: List[int]):
     """
     Dependency factory de FastAPI que verifica que el usuario tenga
     uno de los roles permitidos.
     
     Uso:
-        @router.post("/places", dependencies=[Depends(require_role(["pyme", "administrador"]))])
+        @router.post("/places", dependencies=[Depends(require_role([2, 3]))])
     
     Args:
         roles_permitidos: Lista de roles que pueden acceder al endpoint
@@ -187,7 +187,7 @@ def require_role(roles_permitidos: List[str]):
         if current_user.rol not in roles_permitidos:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Acceso denegado. Se requiere uno de los roles: {', '.join(roles_permitidos)}"
+                detail=f"Acceso denegado. Se requiere uno de los roles: {', '.join(map(str, roles_permitidos))}"
             )
         return current_user
     return role_checker

@@ -8,11 +8,25 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
-from app.schemas.user_schema import UserCreate, UserResponse, Token, UserLogin
-from app.services.auth_service import registrar_usuario, login_usuario, logout_usuario
+from app.schemas.user_schema import UserCreate, UserResponse, Token, UserLogin, UserSocialLogin
+from app.services.auth_service import registrar_usuario, login_usuario, logout_usuario, login_social_usuario
 from app.core.security import get_current_user, oauth2_scheme
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
+
+
+@router.post(
+    "/social-login",
+    response_model=Token,
+    summary="Iniciar sesión social",
+    description="Autentica al usuario mediante un proveedor social (Google/Facebook)"
+)
+def social_login(datos: UserSocialLogin, db: Session = Depends(get_db)):
+    """
+    Inicia sesión con Google o Facebook.
+    Si el usuario no existe, se crea automáticamente.
+    """
+    return login_social_usuario(db, datos)
 
 
 @router.post(
@@ -38,18 +52,16 @@ def register(datos: UserCreate, db: Session = Depends(get_db)):
     "/login",
     response_model=Token,
     summary="Iniciar sesión",
-    description="Autentica al usuario y retorna un token JWT"
+    description="Autentica al usuario (mediante JSON) y retorna un token JWT"
 )
-def login(datos: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(datos: UserLogin, db: Session = Depends(get_db)):
     """
     Inicia sesión con correo y contraseña.
     
-    Usa el estándar OAuth2PasswordRequestForm para soportar el login nativo
-    en Swagger UI (botón Authorize).
+    Acepta un payload JSON.
     Retorna un token JWT Bearer para usar en endpoints protegidos.
     """
-    datos_login = UserLogin(correo=datos.username, contraseña=datos.password)
-    return login_usuario(db, datos_login)
+    return login_usuario(db, datos)
 
 
 @router.post(

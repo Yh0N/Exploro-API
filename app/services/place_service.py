@@ -19,40 +19,31 @@ from app.models.review import Reseña
 from app.schemas.place_schema import PlaceCreate, PlaceUpdate
 
 
-def _calcular_calificacion(db: Session, id_lugar: int) -> Optional[float]:
+def _obtener_estadisticas_resenas(db: Session, id_lugar: int) -> tuple[Optional[float], int]:
     """
-    Calcula dinámicamente la calificación promedio de un lugar
-    usando AVG() sobre la tabla de reseñas.
-    
-    Args:
-        db: Sesión de base de datos
-        id_lugar: ID del lugar
-    
-    Returns:
-        Promedio de puntuación redondeado a 2 decimales, o None si no hay reseñas
+    Calcula dinámicamente el promedio y total de reseñas de un lugar.
     """
-    resultado = db.query(func.avg(Reseña.puntuacion)).filter(
-        Reseña.id_lugar == id_lugar
-    ).scalar()
-    return round(float(resultado), 2) if resultado else None
+    stats = db.query(
+        func.avg(Reseña.puntuacion),
+        func.count(Reseña.id_resena)
+    ).filter(Reseña.id_lugar == id_lugar).first()
+    
+    avg = round(float(stats[0]), 2) if stats[0] else None
+    count = stats[1] if stats[1] else 0
+    return avg, count
 
 
 def agregar_calificacion(lugar_dict: dict, db: Session) -> dict:
     """
-    Agrega el campo calificacion_promedio calculado dinámicamente a un lugar.
-    
-    Args:
-        lugar_dict: Diccionario con los datos del lugar
-        db: Sesión de base de datos
-    
-    Returns:
-        Diccionario del lugar con calificacion_promedio agregado
+    Agrega calificacion_promedio y numero_reseñas calculados dinámicamente.
     """
-    lugar_dict["calificacion_promedio"] = _calcular_calificacion(db, lugar_dict["id_lugar"])
+    avg, count = _obtener_estadisticas_resenas(db, lugar_dict["id_lugar"])
+    lugar_dict["calificacion_promedio"] = avg
+    lugar_dict["numero_reseñas"] = count
     return lugar_dict
 
 
-def crear_lugar(db: Session, datos: PlaceCreate) -> dict:
+def crear_lugar(db: Session, datos: PlaceCreate, id_usuario: int = None) -> dict:
     """
     Registra un nuevo lugar turístico en el sistema.
     
@@ -64,12 +55,15 @@ def crear_lugar(db: Session, datos: PlaceCreate) -> dict:
     Args:
         db: Sesión de base de datos
         datos: Datos del lugar (nombre, descripcion, latitud, longitud, categoria)
+        id_usuario: ID del usuario que crea el lugar
     
     Returns:
         Diccionario con los datos del lugar creado
     """
-    # Construir el punto geoespacial con Shapely + GeoAlchemy2
-    punto = from_shape(Point(datos.longitud, datos.latitud), srid=4326)
+    # Construir el punto geoespacial con Shapely + GeoAlchemy2 (solo si hay coordenadas)
+    punto = None
+    if datos.latitud is not None and datos.longitud is not None:
+        punto = from_shape(Point(datos.longitud, datos.latitud), srid=4326)
 
     nuevo_lugar = Lugar(
         nombre=datos.nombre,
@@ -77,8 +71,11 @@ def crear_lugar(db: Session, datos: PlaceCreate) -> dict:
         latitud=datos.latitud,
         longitud=datos.longitud,
         ubicacion=punto,
+        direccion=datos.ubicacion_textual,
         categoria=datos.categoria,
-        aprobado=False
+        subcategoria=getattr(datos, 'subcategoria', None),
+        id_usuario=id_usuario,
+        aprobado=True
     )
     db.add(nuevo_lugar)
     db.commit()
@@ -90,9 +87,13 @@ def crear_lugar(db: Session, datos: PlaceCreate) -> dict:
         "descripcion": nuevo_lugar.descripcion,
         "latitud": nuevo_lugar.latitud,
         "longitud": nuevo_lugar.longitud,
+        "direccion": nuevo_lugar.direccion,
         "categoria": nuevo_lugar.categoria,
         "aprobado": nuevo_lugar.aprobado,
-        "calificacion_promedio": None
+        "id_usuario": nuevo_lugar.id_usuario,
+        "calificacion_promedio": None,
+        "foto_principal": nuevo_lugar.foto_principal,
+        "fotos": nuevo_lugar.fotos.split(",") if nuevo_lugar.fotos else []
     }
     return resultado
 
@@ -125,9 +126,26 @@ def obtener_lugar(db: Session, id_lugar: int) -> dict:
         "descripcion": lugar.descripcion,
         "latitud": lugar.latitud,
         "longitud": lugar.longitud,
+        "direccion": lugar.direccion,
         "categoria": lugar.categoria,
+        "subcategoria": lugar.subcategoria,
         "aprobado": lugar.aprobado,
+        "id_usuario": lugar.id_usuario,
+        "foto_principal": lugar.foto_principal,
+        "fotos": lugar.fotos.split(",") if lugar.fotos else []
     }
+
+    # Agregar info del anfitrión
+    if lugar.usuario:
+        if lugar.usuario.pyme:
+            resultado["host_name"] = lugar.usuario.pyme.nombre
+        else:
+            resultado["host_name"] = lugar.usuario.nombre
+        resultado["host_since"] = str(lugar.usuario.fecha_registro.year)
+    else:
+        resultado["host_name"] = "Anfitrión de Exploro"
+        resultado["host_since"] = "2024"
+
     return agregar_calificacion(resultado, db)
 
 
@@ -151,7 +169,8 @@ def listar_lugares(
     """
     query = db.query(
         Lugar,
-        func.avg(Reseña.puntuacion).label("calificacion_promedio")
+        func.avg(Reseña.puntuacion).label("calificacion_promedio"),
+        func.count(Reseña.id_resena).label("numero_reseñas")
     ).outerjoin(Reseña, Lugar.id_lugar == Reseña.id_lugar).filter(Lugar.aprobado == True)
 
     if categoria:
@@ -165,16 +184,22 @@ def listar_lugares(
     resultados_db = query.all()
 
     resultados = []
-    for lugar, avg in resultados_db:
+    for lugar, avg, count in resultados_db:
         resultados.append({
             "id_lugar": lugar.id_lugar,
             "nombre": lugar.nombre,
             "descripcion": lugar.descripcion,
             "latitud": lugar.latitud,
             "longitud": lugar.longitud,
+            "direccion": lugar.direccion,
             "categoria": lugar.categoria,
+            "subcategoria": lugar.subcategoria,
             "aprobado": lugar.aprobado,
-            "calificacion_promedio": round(float(avg), 2) if avg else None
+            "id_usuario": lugar.id_usuario,
+            "foto_principal": lugar.foto_principal,
+            "fotos": lugar.fotos.split(",") if lugar.fotos else [],
+            "calificacion_promedio": round(float(avg), 2) if avg else None,
+            "numero_reseñas": count if count else 0
         })
 
     return resultados
@@ -265,7 +290,8 @@ def buscar_lugares_cercanos(
     db: Session,
     latitud: float,
     longitud: float,
-    radio_km: float = 2.0
+    radio_km: float = 2.0,
+    aprobados_only: bool = True
 ) -> List[dict]:
     """
     Busca lugares cercanos usando PostGIS ST_DWithin y ST_Distance.
@@ -296,14 +322,18 @@ def buscar_lugares_cercanos(
 
     # Consulta con ST_DWithin (filtro eficiente con índice espacial)
     # y ST_Distance (cálculo de distancia exacta en metros)
-    lugares = db.query(
+    query = db.query(
         Lugar,
         func.ST_Distance(
             cast(Lugar.ubicacion, Geography),
             cast(func.ST_SetSRID(func.ST_MakePoint(longitud, latitud), 4326), Geography)
         ).label("distancia_metros")
-    ).filter(
-        Lugar.aprobado == True,
+    )
+
+    if aprobados_only:
+        query = query.filter(Lugar.aprobado == True)
+
+    lugares = query.filter(
         func.ST_DWithin(
             cast(Lugar.ubicacion, Geography),
             cast(func.ST_SetSRID(func.ST_MakePoint(longitud, latitud), 4326), Geography),
@@ -319,9 +349,12 @@ def buscar_lugares_cercanos(
             "descripcion": lugar.descripcion,
             "latitud": lugar.latitud,
             "longitud": lugar.longitud,
+            "direccion": lugar.direccion,
             "categoria": lugar.categoria,
             "aprobado": lugar.aprobado,
-            "distancia_metros": round(distancia, 2)
+            "distancia_metros": round(distancia, 2),
+            "foto_principal": lugar.foto_principal,
+            "fotos": lugar.fotos.split(",") if lugar.fotos else []
         }
         agregar_calificacion(lugar_dict, db)
         resultados.append(lugar_dict)
