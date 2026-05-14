@@ -133,7 +133,7 @@ def login_social_usuario(db: Session, datos: UserSocialLogin) -> dict:
             nombre=nombre,
             correo=correo,
             contraseña=hash_password(random_password),
-            rol=1 # Turista por defecto
+            rol=datos.rol or 1 # Turista por defecto
         )
         db.add(usuario)
         db.flush()

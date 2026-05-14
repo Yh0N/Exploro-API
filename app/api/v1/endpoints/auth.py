@@ -97,7 +97,15 @@ def google_callback(
     from app.core.config import settings
     uri = redirect_uri or settings.GOOGLE_REDIRECT_URI
     result = authenticate_google(code=code, redirect_uri=uri, db=db)
-    return result
+    
+    # Redirigir al frontend con los tokens en la URL para que los capture
+    from fastapi.responses import RedirectResponse
+    from app.core.config import settings
+    
+    frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+    target_url = f"{frontend_url}/auth/callback?token={result['access_token']}&refresh_token={result['refresh_token']}"
+    
+    return RedirectResponse(url=target_url)
 
 
 @router.post(
@@ -179,7 +187,16 @@ def facebook_callback(
     """
     from app.core.config import settings
     uri = redirect_uri or settings.FACEBOOK_REDIRECT_URI
-    return authenticate_facebook(code=code, redirect_uri=uri, db=db)
+    result = authenticate_facebook(code=code, redirect_uri=uri, db=db)
+    
+    # Redirigir al frontend con los tokens en la URL para que los capture
+    from fastapi.responses import RedirectResponse
+    from app.core.config import settings
+    
+    frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
+    target_url = f"{frontend_url}/auth/callback?token={result['access_token']}&refresh_token={result['refresh_token']}"
+    
+    return RedirectResponse(url=target_url)
 
 
 # ================================================================

@@ -50,6 +50,7 @@ class UserSocialLogin(BaseModel):
     # Para la simulación, permitiremos enviar datos básicos
     nombre: Optional[str] = None
     correo: Optional[str] = None
+    rol: Optional[int] = Field(1, description="Rol: 1 (turista), 2 (pyme)")
 
 
 class Token(BaseModel):

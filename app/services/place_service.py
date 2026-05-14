@@ -173,7 +173,7 @@ def listar_lugares(
         func.count(Reseña.id_resena).label("numero_reseñas")
     ).outerjoin(Reseña, Lugar.id_lugar == Reseña.id_lugar).filter(Lugar.aprobado == True)
 
-    if categoria:
+    if categoria and categoria != "all":
         query = query.filter(Lugar.categoria == categoria)
 
     query = query.group_by(Lugar.id_lugar)
