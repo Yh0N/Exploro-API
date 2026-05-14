@@ -31,6 +31,7 @@ from app.routes.recommendation_routes import router as recommendation_router
 from app.routes.pyme_routes import router as pyme_router
 from app.routes.admin_routes import router as admin_router
 from app.routes.upload_routes import router as upload_router
+from app.api.v1.endpoints.auth import router as oauth_router
 
 
 # Crear la aplicación FastAPI
@@ -89,6 +90,9 @@ app.include_router(recommendation_router)
 app.include_router(pyme_router)
 app.include_router(admin_router)
 app.include_router(upload_router)
+
+# Router OAuth2 con Google y Facebook (prefijo /api/v1/auth/...)
+app.include_router(oauth_router, prefix="/api/v1")
 
 
 # Endpoint raíz (health check)

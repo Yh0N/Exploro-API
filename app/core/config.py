@@ -3,6 +3,7 @@ Configuración central de la aplicación EXPLORO.
 Usa pydantic-settings para cargar variables de entorno desde el archivo .env.
 """
 
+from typing import Optional
 from pydantic_settings import BaseSettings
 
 
@@ -26,6 +27,22 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # ── Configuración OAuth2 Google ──────────────────────────────────
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    # URL de callback que Google devolverá el código de autorización
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
+
+    # ── Configuración OAuth2 Facebook ─────────────────────────────
+    FACEBOOK_CLIENT_ID: Optional[str] = None
+    FACEBOOK_CLIENT_SECRET: Optional[str] = None
+    # URL de callback que Facebook devolverá el código de autorización
+    FACEBOOK_REDIRECT_URI: str = "http://localhost:8000/auth/facebook/callback"
+
+    # URL base del frontend para construir redirects OAuth
+    FRONTEND_URL: str = "http://localhost:3000"
 
     class Config:
         """Configuración de pydantic-settings para leer el archivo .env"""

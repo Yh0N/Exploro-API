@@ -57,15 +57,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
-    Genera un token JWT con los datos proporcionados.
-    
+    Genera un token JWT de acceso con los datos proporcionados.
+
     Args:
-        data: Diccionario con los claims del token (ej: {"sub": correo})
+        data: Diccionario con los claims del token.
+              Se recomienda incluir: sub (correo o user_id), email, rol, scopes.
         expires_delta: Tiempo de vida del token. Si no se proporciona,
                       se usa ACCESS_TOKEN_EXPIRE_MINUTES del .env
-    
+
     Returns:
-        Token JWT codificado como string
+        Token JWT de acceso codificado como string.
     """
     to_encode = data.copy()
     if expires_delta:
@@ -74,7 +75,35 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "type": "access"})
+    encoded_jwt = jwt.encode(
+        to_encode,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM
+    )
+    return encoded_jwt
+
+
+def create_refresh_token(data: dict) -> str:
+    """
+    Genera un token JWT de refresco con expiración larga (7 días por defecto).
+
+    El refresh token permite emitir nuevos access tokens sin que el usuario
+    vuelva a autenticarse con Google/Facebook. Se almacena en la tabla
+    'usuarios' (campo refresh_token) para permitir invalidación por servidor.
+
+    Args:
+        data: Diccionario con los claims del token.
+              Se incluye el mismo sub que el access token.
+
+    Returns:
+        Token JWT de refresco codificado como string.
+    """
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+    )
+    to_encode.update({"exp": expire, "type": "refresh"})
     encoded_jwt = jwt.encode(
         to_encode,
         settings.SECRET_KEY,
