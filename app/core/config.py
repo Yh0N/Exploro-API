@@ -15,9 +15,10 @@ class Settings(BaseSettings):
     """
 
     # Configuración de la base de datos PostgreSQL
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    # Son opcionales en producción si se provee directamente la DATABASE_URL
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = None
     POSTGRES_HOST: str = "db"
     POSTGRES_PORT: str = "5432"
 
