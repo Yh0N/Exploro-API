@@ -1,7 +1,7 @@
 """
 Rutas OAuth2 de EXPLORO.
 
-Endpoints para el flujo completo de autenticación con Google y Facebook:
+Endpoints para el flujo completo de autenticación con Google:
 - Login: genera URL de autorización del proveedor para redirigir al usuario
 - Callback: recibe el código de autorización, emite tokens JWT propios
 - Refresh: renueva el access_token usando un refresh_token válido
@@ -29,9 +29,7 @@ from app.schemas.auth import (
 )
 from app.services.oauth_service import (
     authenticate_google,
-    authenticate_facebook,
     build_google_auth_url,
-    build_facebook_auth_url,
 )
 
 router = APIRouter(prefix="/auth", tags=["OAuth2 - Autenticación Social"])
@@ -92,7 +90,7 @@ def google_callback(
     - Obtiene email, nombre, foto y sub del usuario.
     - Crea el usuario en PostgreSQL si no existe.
     - Retorna access_token + refresh_token propios de EXPLORO.
-    - Lanza 409 si el correo ya está registrado con Facebook o login local.
+    - Lanza 409 si el correo ya está registrado con login local o Google.
     """
     from app.core.config import settings
     uri = redirect_uri or settings.GOOGLE_REDIRECT_URI
@@ -128,75 +126,6 @@ def google_callback_post(
     return authenticate_google(code=code, redirect_uri=uri, db=db)
 
 
-# ================================================================
-# FACEBOOK OAUTH2
-# ================================================================
-
-@router.get(
-    "/facebook/login",
-    summary="Obtener URL de autorización de Facebook",
-    description=(
-        "Devuelve la URL de Facebook a la que el frontend debe redirigir al usuario "
-        "para iniciar el flujo OAuth2. El parámetro `redirect_uri` debe coincidir "
-        "exactamente con el configurado en Facebook Developers."
-    )
-)
-def facebook_login(
-    redirect_uri: Optional[str] = Query(
-        None,
-        description="URI de redirección registrada en Facebook Developers (opcional)"
-    )
-):
-    """
-    Genera y retorna la URL de autorización de Facebook OAuth2.
-
-    El frontend redirige al usuario a esta URL. Facebook pedirá consentimiento
-    y redirigirá al redirect_uri con el `code` para el siguiente paso.
-    """
-    auth_url = build_facebook_auth_url(redirect_uri)
-    return {"auth_url": auth_url, "provider": "facebook"}
-
-
-@router.get(
-    "/facebook/callback",
-    response_model=TokenWithUser,
-    summary="Callback de Facebook OAuth2",
-    description=(
-        "Recibe el código de autorización devuelto por Facebook, lo intercambia "
-        "por información del usuario (email, nombre, foto), crea o recupera el "
-        "registro en PostgreSQL y emite tokens JWT propios de EXPLORO."
-    )
-)
-def facebook_callback(
-    code: str = Query(..., description="Código de autorización de un solo uso devuelto por Facebook"),
-    redirect_uri: Optional[str] = Query(
-        None,
-        description="URI de redirección usada en el paso de login"
-    ),
-    db: Session = Depends(get_db)
-):
-    """
-    Procesa el callback del flujo OAuth2 de Facebook.
-
-    - Intercambia el código por el access_token de Facebook.
-    - Obtiene id, email, nombre y foto del usuario.
-    - Crea el usuario en PostgreSQL si no existe.
-    - Retorna access_token + refresh_token propios de EXPLORO.
-    - Lanza 409 si el correo ya está registrado con Google o login local.
-    - Lanza 400 si Facebook no proporciona un correo (permiso no otorgado).
-    """
-    from app.core.config import settings
-    uri = redirect_uri or settings.FACEBOOK_REDIRECT_URI
-    result = authenticate_facebook(code=code, redirect_uri=uri, db=db)
-    
-    # Redirigir al frontend con los tokens en la URL para que los capture
-    from fastapi.responses import RedirectResponse
-    from app.core.config import settings
-    
-    frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
-    target_url = f"{frontend_url}/auth/callback?token={result['access_token']}&refresh_token={result['refresh_token']}"
-    
-    return RedirectResponse(url=target_url)
 
 
 # ================================================================

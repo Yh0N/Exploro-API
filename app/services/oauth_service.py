@@ -1,7 +1,7 @@
 """
 Servicio OAuth2 de EXPLORO.
 
-Gestiona el flujo completo de autenticación con Google y Facebook:
+Gestiona el flujo completo de autenticación con Google:
 1. Construye la URL de autorización del proveedor.
 2. Intercambia el código de autorización por tokens del proveedor (via httpx síncrono).
 3. Obtiene la información del usuario (email, nombre, foto, sub/id).
@@ -37,9 +37,6 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
-FACEBOOK_AUTH_URL = "https://www.facebook.com/v19.0/dialog/oauth"
-FACEBOOK_TOKEN_URL = "https://graph.facebook.com/v19.0/oauth/access_token"
-FACEBOOK_USERINFO_URL = "https://graph.facebook.com/me"
 
 
 # ================================================================
@@ -79,34 +76,6 @@ def build_google_auth_url(redirect_uri: Optional[str] = None) -> str:
     return f"{GOOGLE_AUTH_URL}?{query}"
 
 
-def build_facebook_auth_url(redirect_uri: Optional[str] = None) -> str:
-    """
-    Construye la URL de autorización de Facebook OAuth2.
-
-    El frontend redirige al usuario a esta URL. Facebook devolverá
-    el código de autorización al redirect_uri tras el consentimiento.
-
-    Args:
-        redirect_uri: URI de redirección. Si no se especifica, se usa el valor de .env.
-
-    Returns:
-        URL completa de autorización de Facebook como string.
-    """
-    if not settings.FACEBOOK_CLIENT_ID:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Facebook OAuth no está configurado en el servidor"
-        )
-
-    uri = redirect_uri or settings.FACEBOOK_REDIRECT_URI
-    params = {
-        "client_id": settings.FACEBOOK_CLIENT_ID,
-        "redirect_uri": uri,
-        "scope": "email,public_profile",
-        "response_type": "code",
-    }
-    query = "&".join(f"{k}={v}" for k, v in params.items())
-    return f"{FACEBOOK_AUTH_URL}?{query}"
 
 
 # ================================================================
@@ -255,153 +224,6 @@ def _get_google_userinfo(access_token: str) -> dict:
         )
 
 
-# ================================================================
-# AUTENTICACIÓN FACEBOOK
-# ================================================================
-
-def authenticate_facebook(code: str, redirect_uri: str, db: Session) -> dict:
-    """
-    Ejecuta el flujo completo de autenticación OAuth2 con Facebook.
-
-    Pasos:
-    a) Intercambia el código de autorización por un access_token de Facebook.
-    b) Obtiene la información del usuario: id, email, nombre y foto.
-    c) Busca el usuario en PostgreSQL por correo electrónico.
-    d) Si no existe: crea Usuario(proveedor_auth='facebook', rol=1).
-    e) Si existe con diferente proveedor: lanza HTTPException 409.
-    f) Actualiza foto_perfil si cambió.
-    g/h) Genera y persiste tokens EXPLORO.
-
-    Args:
-        code: Código de autorización de un solo uso devuelto por Facebook.
-        redirect_uri: Debe coincidir exactamente con el registrado en Facebook Developers.
-        db: Sesión síncrona de SQLAlchemy.
-
-    Returns:
-        Diccionario con access_token, refresh_token, token_type y datos del usuario.
-
-    Raises:
-        HTTPException 409: Si el correo ya está registrado con otro proveedor.
-        HTTPException 400: Si Facebook rechaza el código.
-        HTTPException 500: Si ocurre un error al contactar Facebook.
-    """
-    # ── a) Intercambiar código por access_token de Facebook ───────────────────
-    token_data = _exchange_facebook_code(code, redirect_uri)
-    fb_access_token = token_data.get("access_token")
-
-    # ── b) Obtener información del usuario de Facebook ────────────────────────
-    userinfo = _get_facebook_userinfo(fb_access_token)
-
-    email: str = userinfo.get("email", "")
-    nombre: str = userinfo.get("name", "Usuario Facebook")
-    fb_id: str = str(userinfo.get("id", ""))
-    foto: Optional[str] = (
-        userinfo.get("picture", {}).get("data", {}).get("url")
-    )
-
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                "Facebook no proporcionó un correo electrónico. "
-                "Asegúrese de haber otorgado el permiso 'email' en la autorización."
-            )
-        )
-
-    # ── c/d/e/f) Buscar o crear usuario ───────────────────────────────────────
-    usuario = _buscar_o_crear_usuario(
-        db=db,
-        correo=email,
-        nombre=nombre,
-        foto=foto,
-        sub=fb_id,
-        proveedor="facebook",
-        email_verificado=True   # Facebook siempre verifica el email
-    )
-
-    # ── g/h) Emitir tokens EXPLORO ────────────────────────────────────────────
-    return _emitir_tokens_exploro(db, usuario)
-
-
-def _exchange_facebook_code(code: str, redirect_uri: str) -> dict:
-    """
-    Intercambia el código de autorización de Facebook por un access_token.
-
-    Args:
-        code: Código de un solo uso devuelto por Facebook al callback.
-        redirect_uri: URI de redirección exacta registrada en Facebook Developers.
-
-    Returns:
-        Diccionario con access_token y token_type de Facebook.
-
-    Raises:
-        HTTPException 400: Si Facebook responde con error.
-        HTTPException 500: Si ocurre un error de red.
-    """
-    try:
-        response = httpx.get(
-            FACEBOOK_TOKEN_URL,
-            params={
-                "client_id": settings.FACEBOOK_CLIENT_ID,
-                "client_secret": settings.FACEBOOK_CLIENT_SECRET,
-                "redirect_uri": redirect_uri,
-                "code": code,
-            },
-            timeout=10.0
-        )
-        token_data = response.json()
-
-        if "error" in token_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Error de Facebook OAuth: {token_data['error'].get('message', 'Error desconocido')}"
-            )
-
-        return token_data
-
-    except httpx.HTTPError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error de red al contactar Facebook: {str(e)}"
-        )
-
-
-def _get_facebook_userinfo(access_token: str) -> dict:
-    """
-    Obtiene la información del usuario usando el access_token de Facebook.
-
-    Solicita los campos id, name, email y picture para construir el perfil.
-
-    Args:
-        access_token: Token de acceso de Facebook.
-
-    Returns:
-        Diccionario con id, name, email y picture del usuario de Facebook.
-
-    Raises:
-        HTTPException 500: Si Facebook rechaza el token o hay error de red.
-    """
-    try:
-        response = httpx.get(
-            FACEBOOK_USERINFO_URL,
-            params={
-                "fields": "id,name,email,picture.type(large)",
-                "access_token": access_token,
-            },
-            timeout=10.0
-        )
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="No se pudo obtener información del usuario de Facebook"
-            )
-        return response.json()
-
-    except httpx.HTTPError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener userinfo de Facebook: {str(e)}"
-        )
 
 
 # ================================================================
@@ -432,7 +254,7 @@ def _buscar_o_crear_usuario(
         nombre: Nombre del usuario del proveedor OAuth.
         foto: URL de la foto de perfil del proveedor (puede ser None).
         sub: ID único del usuario en el proveedor (sub de Google, id de Facebook).
-        proveedor: Nombre del proveedor: 'google' o 'facebook'.
+        proveedor: Nombre del proveedor: 'google'.
         email_verificado: True si el proveedor verificó el correo.
 
     Returns:

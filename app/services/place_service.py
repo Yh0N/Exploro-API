@@ -152,7 +152,8 @@ def obtener_lugar(db: Session, id_lugar: int) -> dict:
 def listar_lugares(
     db: Session,
     categoria: Optional[str] = None,
-    calificacion_min: Optional[float] = None
+    calificacion_min: Optional[float] = None,
+    subcategoria: Optional[str] = None
 ) -> List[dict]:
     """
     Lista los lugares turísticos aprobados con filtros opcionales.
@@ -175,6 +176,9 @@ def listar_lugares(
 
     if categoria and categoria != "all":
         query = query.filter(Lugar.categoria == categoria)
+    
+    if subcategoria and subcategoria != "all":
+        query = query.filter(Lugar.subcategoria == subcategoria)
 
     query = query.group_by(Lugar.id_lugar)
 

@@ -111,12 +111,12 @@ def login_usuario(db: Session, datos: UserLogin) -> dict:
 
 def login_social_usuario(db: Session, datos: UserSocialLogin) -> dict:
     """
-    Inicia sesión de un usuario mediante proveedor social (Google/Facebook).
+    Inicia sesión de un usuario mediante proveedor social (Google).
     
     1. Si el usuario existe por correo, lo loguea.
     2. Si no existe, lo crea automáticamente.
     """
-    # En un sistema real, aquí validaríamos el id_token con Google/Facebook
+    # En un sistema real, aquí validaríamos el id_token con Google
     # Para fines de demostración, usaremos el correo enviado
     correo = datos.correo or f"{datos.provider}_{secrets.token_hex(4)}@exploro.com"
     nombre = datos.nombre or f"Usuario {datos.provider.capitalize()}"

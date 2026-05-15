@@ -67,10 +67,6 @@ class GoogleCallbackRequest(BaseModel):
     redirect_uri: str
 
 
-class FacebookCallbackRequest(BaseModel):
-    """Callback de Facebook."""
-    code: str
-    redirect_uri: str
 
 
 # ================================================================

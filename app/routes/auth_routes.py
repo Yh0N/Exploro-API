@@ -19,11 +19,11 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
     "/social-login",
     response_model=Token,
     summary="Iniciar sesión social",
-    description="Autentica al usuario mediante un proveedor social (Google/Facebook)"
+    description="Autentica al usuario mediante un proveedor social (Google)"
 )
 def social_login(datos: UserSocialLogin, db: Session = Depends(get_db)):
     """
-    Inicia sesión con Google o Facebook.
+    Inicia sesión con Google.
     Si el usuario no existe, se crea automáticamente.
     """
     return login_social_usuario(db, datos)

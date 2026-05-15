@@ -31,14 +31,15 @@ router = APIRouter(prefix="/places", tags=["Lugares"])
 )
 def list_places(
     categoria: Optional[str] = Query(None, description="Filtrar por categoría"),
+    subcategoria: Optional[str] = Query(None, description="Filtrar por subcategoría"),
     calificacion_min: Optional[float] = Query(None, ge=1, le=5, description="Calificación mínima"),
     db: Session = Depends(get_db)
 ):
     """
     Lista todos los lugares turísticos aprobados.
-    Permite filtrar por categoría y calificación mínima.
+    Permite filtrar por categoría, subcategoría y calificación mínima.
     """
-    return listar_lugares(db, categoria, calificacion_min)
+    return listar_lugares(db, categoria, calificacion_min, subcategoria)
 
 
 @router.post(

@@ -70,3 +70,6 @@ class Usuario(Base):
     
     # Favoritos (Muchos a Muchos)
     favorites = relationship("Lugar", secondary=favoritos, backref="usuarios_que_marcaron_favorito")
+    
+    # Imágenes subidas (RF12)
+    imagenes = relationship("Imagen", back_populates="usuario", cascade="all, delete-orphan")

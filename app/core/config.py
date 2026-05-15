@@ -35,11 +35,6 @@ class Settings(BaseSettings):
     # URL de callback que Google devolverá el código de autorización
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
 
-    # ── Configuración OAuth2 Facebook ─────────────────────────────
-    FACEBOOK_CLIENT_ID: Optional[str] = None
-    FACEBOOK_CLIENT_SECRET: Optional[str] = None
-    # URL de callback que Facebook devolverá el código de autorización
-    FACEBOOK_REDIRECT_URI: str = "http://localhost:8000/auth/facebook/callback"
 
     # URL base del frontend para construir redirects OAuth
     FRONTEND_URL: str = "http://localhost:3000"
