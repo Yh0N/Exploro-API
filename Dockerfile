@@ -24,5 +24,5 @@ COPY . .
 # Exponer el puerto de la API
 EXPOSE 8000
 
-# Comando por defecto para ejecutar la API
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Comando por defecto para ejecutar la API (Producción: sin --reload)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

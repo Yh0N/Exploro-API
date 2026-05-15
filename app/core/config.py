@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     # URL de conexión a la base de datos (generada o directa desde .env)
     DATABASE_URL: str
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_postgres_scheme(cls, v: str) -> str:
+        """
+        Render proporciona la URL como 'postgres://', pero SQLAlchemy 
+        requiere 'postgresql://'. Este validador lo corrige automáticamente.
+        """
+        if v and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
+
     # Configuración de autenticación JWT
     SECRET_KEY: str
     ALGORITHM: str = "HS256"

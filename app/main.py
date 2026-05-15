@@ -100,11 +100,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Solo se permiten orígenes conocidos; sin wildcards en producción
 # ─────────────────────────────────────────────────────────────────
 
-# Orígenes permitidos para desarrollo local
+# Orígenes permitidos (CORS)
+# En producción, usa la URL del frontend configurada en .env
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 origins = [
+    frontend_url,
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    # En producción agregar: "https://tu-frontend.onrender.com"
 ]
 
 app.add_middleware(
@@ -173,3 +175,9 @@ def home():
         "version": "1.0.0",
         "docs": "/docs"
     }
+
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    """Endpoint dedicado para health checks de Render/Docker."""
+    return {"status": "healthy", "version": "1.0.0"}
