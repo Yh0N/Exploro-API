@@ -141,6 +141,9 @@ def on_startup():
     Crea todas las tablas definidas en los modelos si no existen.
     NOTA: Para producción se recomienda usar Alembic para migraciones.
     """
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
     Base.metadata.create_all(bind=engine)
 
 
