@@ -77,11 +77,14 @@ def update_my_profile(
         current_user.correo = datos.correo
     if datos.preferencias is not None:
         current_user.preferencias = datos.preferencias
+    if datos.is_public is not None:
+        current_user.is_public = datos.is_public
 
     # Actualizar campos del perfil (si existe)
     if current_user.perfil:
         if datos.foto is not None:
             current_user.perfil.foto = datos.foto
+            current_user.foto_perfil = datos.foto
         if datos.biografia is not None:
             current_user.perfil.biografia = datos.biografia
 

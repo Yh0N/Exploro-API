@@ -13,6 +13,7 @@ from app.models.review import Reseña
 from app.models.recommendation import Recomendacion
 from app.models.pyme import Pyme
 from app.models.auth_token import TokenRevocado
+from app.models.image import Imagen
 
 # Correctly replace only the host
 import re

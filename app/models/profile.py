@@ -19,7 +19,7 @@ class Perfil(Base):
 
     id_perfil = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), unique=True, nullable=False)
-    foto = Column(String(500), nullable=True)  # URL de la foto de perfil
+    foto = Column(String, nullable=True)  # URL o Base64 de la foto de perfil
     biografia = Column(String(500), nullable=True)  # Descripción breve del usuario
 
     # Relación inversa con Usuario

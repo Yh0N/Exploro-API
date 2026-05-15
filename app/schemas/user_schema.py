@@ -83,6 +83,7 @@ class UserResponse(BaseModel):
     rol: int
     calificacion_promedio: Optional[float] = 0.0
     numero_reseñas: Optional[int] = 0
+    is_public: bool = True
     perfil: Optional[ProfileResponse] = None
     favorites: List[int] = Field(default=[])
 
@@ -103,8 +104,9 @@ class UserUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=2, max_length=100)
     correo: Optional[str] = Field(None, max_length=150)
     preferencias: Optional[List[str]] = None
-    foto: Optional[str] = Field(None, max_length=500, description="URL de la foto de perfil")
-    biografia: Optional[str] = Field(None, max_length=500, description="Biografía del usuario")
+    foto: Optional[str] = Field(None, description="URL o Base64 de la foto de perfil")
+    biografia: Optional[str] = Field(None, description="Biografía del usuario")
+    is_public: Optional[bool] = Field(None, description="Indica si el perfil es público")
 
 
 class UserPublicResponse(BaseModel):

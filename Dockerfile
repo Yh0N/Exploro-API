@@ -4,13 +4,14 @@ FROM python:3.11-slim
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias para psycopg2 y GDAL (GeoAlchemy2)
+# Instalar dependencias del sistema necesarias para psycopg2, GDAL (GeoAlchemy2) y libmagic (python-magic)
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     libgeos-dev \
     libproj-dev \
     gdal-bin \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar e instalar dependencias de Python

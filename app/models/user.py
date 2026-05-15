@@ -50,13 +50,15 @@ class Usuario(Base):
     # Indica si el correo fue verificado por el proveedor OAuth
     email_verificado = Column(Boolean, nullable=False, default=False)
     # URL de la foto de perfil obtenida del proveedor
-    foto_perfil = Column(String(500), nullable=True)
+    foto_perfil = Column(String, nullable=True)
     # Hash de contraseña exclusivo para login local futuro (nullable para OAuth)
     hashed_password = Column(String(255), nullable=True)
     # Refresh token emitido por EXPLORO (nullable, se actualiza en cada sesión)
     refresh_token = Column(String(512), nullable=True)
     # Indica si la cuenta está activa; inactiva bloquea el acceso
     activo = Column(Boolean, nullable=False, default=True)
+    # Indica si el perfil es público o privado
+    is_public = Column(Boolean, nullable=False, default=True)
     # Timestamp de última actualización del registro
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.utcnow)
 

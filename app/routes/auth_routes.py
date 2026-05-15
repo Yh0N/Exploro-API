@@ -3,7 +3,7 @@ Rutas de autenticación de EXPLORO.
 Endpoints para registro, inicio de sesión y cierre de sesión.
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,9 @@ from app.database.connection import get_db
 from app.schemas.user_schema import UserCreate, UserResponse, Token, UserLogin, UserSocialLogin
 from app.services.auth_service import registrar_usuario, login_usuario, logout_usuario, login_social_usuario
 from app.core.security import get_current_user, oauth2_scheme
+
+# Importar limiter para rate limiting (TAREA 1)
+from app.core.limiter import limiter
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -36,10 +39,11 @@ def social_login(datos: UserSocialLogin, db: Session = Depends(get_db)):
     summary="Registrar nuevo usuario",
     description="Crea una nueva cuenta de usuario con perfil vacío asociado"
 )
-def register(datos: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")  # Aumentado para pruebas (antes 3/minute)
+def register(request: Request, datos: UserCreate, db: Session = Depends(get_db)):
     """
     Registra un nuevo usuario en el sistema EXPLORO.
-    
+
     - Valida que el correo no esté ya registrado
     - Cifra la contraseña con bcrypt
     - Crea automáticamente un perfil vacío
@@ -54,10 +58,11 @@ def register(datos: UserCreate, db: Session = Depends(get_db)):
     summary="Iniciar sesión",
     description="Autentica al usuario (mediante JSON) y retorna un token JWT"
 )
-def login(datos: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")  # Aumentado para pruebas (antes 5/minute)
+def login(request: Request, datos: UserLogin, db: Session = Depends(get_db)):
     """
     Inicia sesión con correo y contraseña.
-    
+
     Acepta un payload JSON.
     Retorna un token JWT Bearer para usar en endpoints protegidos.
     """
@@ -76,7 +81,7 @@ def logout(
 ):
     """
     Cierra la sesión del usuario revocando su token JWT.
-    
+
     El token se agrega a la lista negra (tabla tokens_revocados).
     Las futuras peticiones con este token serán rechazadas.
     """

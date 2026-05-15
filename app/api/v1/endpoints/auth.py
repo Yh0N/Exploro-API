@@ -14,7 +14,7 @@ Todos los endpoints están bajo el prefijo /auth (montado en /api/v1 en main.py)
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -32,6 +32,9 @@ from app.services.oauth_service import (
     build_google_auth_url,
 )
 
+# Importar limiter para rate limiting (TAREA 1)
+from app.core.limiter import limiter
+
 router = APIRouter(prefix="/auth", tags=["OAuth2 - Autenticación Social"])
 
 
@@ -48,7 +51,9 @@ router = APIRouter(prefix="/auth", tags=["OAuth2 - Autenticación Social"])
         "exactamente con el configurado en Google Cloud Console."
     )
 )
+@limiter.limit("10/minute")  # Máximo 10 solicitudes por minuto por IP (TAREA 1)
 def google_login(
+    request: Request,
     redirect_uri: Optional[str] = Query(
         None,
         description="URI de redirección registrada en Google Console (opcional, usa valor del .env por defecto)"
@@ -95,14 +100,14 @@ def google_callback(
     from app.core.config import settings
     uri = redirect_uri or settings.GOOGLE_REDIRECT_URI
     result = authenticate_google(code=code, redirect_uri=uri, db=db)
-    
+
     # Redirigir al frontend con los tokens en la URL para que los capture
     from fastapi.responses import RedirectResponse
     from app.core.config import settings
-    
+
     frontend_url = settings.FRONTEND_URL or "http://localhost:3000"
     target_url = f"{frontend_url}/auth/callback?token={result['access_token']}&refresh_token={result['refresh_token']}"
-    
+
     return RedirectResponse(url=target_url)
 
 
@@ -126,8 +131,6 @@ def google_callback_post(
     return authenticate_google(code=code, redirect_uri=uri, db=db)
 
 
-
-
 # ================================================================
 # REFRESH TOKEN
 # ================================================================
@@ -142,7 +145,8 @@ def google_callback_post(
         "en la BD, se retorna 401."
     )
 )
-def refresh_access_token(body: RefreshRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")  # Máximo 10 renovaciones por minuto por IP (TAREA 1)
+def refresh_access_token(request: Request, body: RefreshRequest, db: Session = Depends(get_db)):
     """
     Renueva el access_token usando un refresh_token válido.
 

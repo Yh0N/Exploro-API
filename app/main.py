@@ -9,7 +9,15 @@ Documentación Swagger disponible en: http://localhost:8000/docs
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 import os
+
+# Importaciones para rate limiting
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.core.limiter import limiter
 
 from app.database.connection import engine, Base
 
@@ -36,7 +44,35 @@ from app.routes.image_routes import router as image_router
 from app.api.v1.endpoints.auth import router as oauth_router
 
 
-# Crear la aplicación FastAPI
+# ─────────────────────────────────────────────────────────────────
+# MIDDLEWARE: Límite de tamaño de solicitudes (TAREA 4)
+# Rechaza cualquier POST que supere 5 MB antes de procesarlo
+# ─────────────────────────────────────────────────────────────────
+
+MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB en bytes
+
+
+class LimitUploadSize(BaseHTTPMiddleware):
+    """
+    Middleware que rechaza solicitudes POST cuyo Content-Length supere
+    el límite configurado (5 MB). Previene ataques de subida masiva.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        if request.method == "POST":
+            content_length = request.headers.get("content-length")
+            if content_length and int(content_length) > MAX_UPLOAD_SIZE:
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": "El archivo supera el tamaño máximo permitido de 5 MB"}
+                )
+        return await call_next(request)
+
+
+# ─────────────────────────────────────────────────────────────────
+# INSTANCIA DE LA APLICACIÓN
+# ─────────────────────────────────────────────────────────────────
+
 app = FastAPI(
     title="EXPLORO API",
     description=(
@@ -51,20 +87,40 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configurar CORS para permitir solicitudes desde el frontend
+# ─────────────────────────────────────────────────────────────────
+# RATE LIMITING (TAREA 1)
+# Registrar el limiter en el estado de la app y su manejador de error
+# ─────────────────────────────────────────────────────────────────
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ─────────────────────────────────────────────────────────────────
+# CORS RESTRICTIVO (TAREA 6)
+# Solo se permiten orígenes conocidos; sin wildcards en producción
+# ─────────────────────────────────────────────────────────────────
+
+# Orígenes permitidos para desarrollo local
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # En producción agregar: "https://tu-frontend.onrender.com"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "https://1h4bg5xs-3000.use2.devtunnels.ms",
-    ],
-    allow_origin_regex=r"https://.*\.devtunnels\.ms",
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
+# Aplicar middleware de límite de tamaño
+app.add_middleware(LimitUploadSize)
+
+# ─────────────────────────────────────────────────────────────────
+# ARCHIVOS ESTÁTICOS
+# ─────────────────────────────────────────────────────────────────
 
 # Servir archivos estáticos (fotos subidas)
 if not os.path.exists("uploads"):
@@ -72,7 +128,10 @@ if not os.path.exists("uploads"):
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
-# Evento de inicio: crear tablas en la base de datos si no existen
+# ─────────────────────────────────────────────────────────────────
+# EVENTOS DE CICLO DE VIDA
+# ─────────────────────────────────────────────────────────────────
+
 @app.on_event("startup")
 def on_startup():
     """
@@ -83,7 +142,10 @@ def on_startup():
     Base.metadata.create_all(bind=engine)
 
 
-# Registrar todos los routers de la API
+# ─────────────────────────────────────────────────────────────────
+# ROUTERS
+# ─────────────────────────────────────────────────────────────────
+
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(place_router)
@@ -99,7 +161,10 @@ app.include_router(oauth_router, prefix="/api/v1")
 app.include_router(image_router, prefix="/api/v1")
 
 
-# Endpoint raíz (health check)
+# ─────────────────────────────────────────────────────────────────
+# HEALTH CHECK
+# ─────────────────────────────────────────────────────────────────
+
 @app.get("/", tags=["Health"])
 def home():
     """Verifica que la API está funcionando correctamente."""
@@ -108,4 +173,3 @@ def home():
         "version": "1.0.0",
         "docs": "/docs"
     }
-

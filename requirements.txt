@@ -14,3 +14,11 @@ pytest
 httpx>=0.27.0
 authlib>=1.3.0
 Pillow>=10.3.0
+
+# ── Seguridad (TAREA 1 y TAREA 3) ───────────────────────────────
+# Rate limiting para endpoints de autenticación
+slowapi>=0.1.9
+# Validación real de tipo MIME en subida de imágenes (Linux/Render)
+python-magic>=0.4.27
+# NOTA para desarrollo en Windows: instalar también python-magic-bin
+# pip install python-magic-bin
