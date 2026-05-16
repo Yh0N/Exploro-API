@@ -101,24 +101,25 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # ─────────────────────────────────────────────────────────────────
 
 # Orígenes permitidos (CORS)
-# En producción, usa la URL del frontend configurada en .env
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 origins = [
     frontend_url,
+    "https://airbnb-clone-exploro.vercel.app",  # Vercel forzado
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 
+# Aplicar middleware de límite de tamaño primero
+app.add_middleware(LimitUploadSize)
+
+# CORS debe ser lo ÚLTIMO en agregarse (para que sea lo PRIMERO en ejecutarse)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
-# Aplicar middleware de límite de tamaño
-app.add_middleware(LimitUploadSize)
 
 # ─────────────────────────────────────────────────────────────────
 # ARCHIVOS ESTÁTICOS
