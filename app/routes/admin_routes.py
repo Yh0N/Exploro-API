@@ -161,10 +161,13 @@ def list_all_places(
             "descripcion": lugar.descripcion,
             "latitud": lugar.latitud,
             "longitud": lugar.longitud,
+            "direccion": lugar.direccion,
             "categoria": lugar.categoria,
             "subcategoria": lugar.subcategoria,
             "aprobado": lugar.aprobado,
             "id_usuario": lugar.id_usuario,
+            "foto_principal": lugar.foto_principal,
+            "fotos": lugar.fotos.split(",") if lugar.fotos else []
         }
         agregar_calificacion(lugar_dict, db)
         resultados.append(lugar_dict)

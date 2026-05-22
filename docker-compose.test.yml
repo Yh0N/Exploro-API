@@ -1,0 +1,115 @@
+###############################################################################
+# docker-compose.test.yml – Entorno de pruebas de integración para Exploro API
+#
+# Levanta PostgreSQL 15 con PostGIS 3.3 en el puerto 5433 (para no
+# conflictuar con la BD de desarrollo en 5432).
+#
+# Uso:
+#   # Levantar BD de test
+#   docker compose -f docker-compose.test.yml up -d
+#
+#   # Ejecutar pruebas de integración (la app se conecta a la BD de test)
+#   USE_TESTCONTAINERS=0 \
+#   DATABASE_URL=postgresql+psycopg2://test:test@localhost:5433/exploro_test \
+#   pytest tests/integration/ tests/security/ -v
+#
+#   # Cargar datos semilla
+#   DATABASE_URL=postgresql+psycopg2://test:test@localhost:5433/exploro_test \
+#   python seed_data.py
+#
+#   # Pruebas de carga (requiere la API corriendo)
+#   DATABASE_URL=postgresql+psycopg2://test:test@localhost:5433/exploro_test \
+#   uvicorn app.main:app --port 8001 --reload &
+#   locust -f tests/performance/locustfile.py --host http://localhost:8001
+#
+#   # Apagar y limpiar
+#   docker compose -f docker-compose.test.yml down -v
+###############################################################################
+
+version: "3.9"
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 15 + PostGIS 3.3
+  # ---------------------------------------------------------------------------
+  db_test:
+    image: postgis/postgis:15-3.3
+    container_name: exploro_db_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: exploro_test
+      # Crear extensión PostGIS automáticamente al inicializar
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=es_CO.UTF-8"
+    ports:
+      - "5433:5432"   # Puerto externo 5433 evita conflicto con BD de desarrollo
+    volumes:
+      - exploro_test_data:/var/lib/postgresql/data
+      - ./docker/test-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d exploro_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - exploro_test_net
+
+  # ---------------------------------------------------------------------------
+  # API de Exploro (modo test) — se conecta a db_test
+  # Útil para pruebas de carga con Locust contra un entorno real.
+  # ---------------------------------------------------------------------------
+  api_test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: exploro_api_test
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg2://test:test@db_test:5432/exploro_test
+      SECRET_KEY: test-secret-key-minimo-32-caracteres!!
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: exploro_test
+      POSTGRES_HOST: db_test
+      POSTGRES_PORT: "5432"
+    ports:
+      - "8001:8000"   # Expone en 8001 (sin conflicto con la app en 8000)
+    depends_on:
+      db_test:
+        condition: service_healthy
+    networks:
+      - exploro_test_net
+    profiles:
+      - api     # Solo se levanta con: docker compose --profile api up
+
+  # ---------------------------------------------------------------------------
+  # Adminer – interfaz web para inspeccionar la BD de test
+  # Acceder en: http://localhost:8080
+  # ---------------------------------------------------------------------------
+  adminer:
+    image: adminer:4
+    container_name: exploro_adminer_test
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - exploro_test_net
+    profiles:
+      - debug   # Solo con: docker compose --profile debug up
+
+# ---------------------------------------------------------------------------
+# Redes y volúmenes
+# ---------------------------------------------------------------------------
+volumes:
+  exploro_test_data:
+    driver: local
+
+networks:
+  exploro_test_net:
+    driver: bridge

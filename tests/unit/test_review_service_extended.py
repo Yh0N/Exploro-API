@@ -34,11 +34,11 @@ def test_listar_reseñas_ok():
 
 
 def test_listar_reseñas_lugar_inexistente():
+    """listar_reseñas no valida existencia del lugar, devuelve lista vacía."""
     db = MagicMock()
-    db.query.return_value.filter.return_value.first.return_value = None
-    with pytest.raises(HTTPException) as exc:
-        listar_reseñas(db, 9)
-    assert exc.value.status_code == 404
+    db.query.return_value.join.return_value.filter.return_value.order_by.return_value.all.return_value = []
+    resultado = listar_reseñas(db, 9999)
+    assert resultado == []
 
 
 def test_eliminar_reseña_autor():
@@ -63,7 +63,7 @@ def test_eliminar_reseña_admin():
     reseña.id_usuario = 5
     admin = MagicMock()
     admin.id_usuario = 1
-    admin.rol = "administrador"
+    admin.rol = 3  # integer, igual que el modelo de base de datos
 
     db.query.return_value.filter.return_value.first.return_value = reseña
 

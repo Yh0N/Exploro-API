@@ -13,3 +13,4 @@ def pytest_configure(config) -> None:
     import app.models.recommendation  # noqa: F401
     import app.models.pyme  # noqa: F401
     import app.models.auth_token  # noqa: F401
+    import app.models.image  # noqa: F401

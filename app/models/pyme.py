@@ -26,6 +26,8 @@ class Pyme(Base):
     latitud = Column(Float, nullable=True)
     longitud = Column(Float, nullable=True)
     ubicacion = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
+    telefono = Column(String(20), nullable=True)
+    whatsapp = Column(String(20), nullable=True)
     aprobado = Column(Boolean, default=False)
     id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=False)
     foto_principal = Column(String(500), nullable=True)

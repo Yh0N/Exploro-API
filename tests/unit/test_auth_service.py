@@ -15,11 +15,12 @@ def test_registrar_usuario_correo_duplicado():
         correo="ana@example.com",
         contraseña="Secret123!",
         preferencias=[],
-        rol="usuario_regular",
+        rol=1,
     )
     with pytest.raises(HTTPException) as exc:
         registrar_usuario(db, datos)
     assert exc.value.status_code == 400
+
 
 
 def test_login_usuario_usuario_inexistente():

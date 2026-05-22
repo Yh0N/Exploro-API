@@ -48,7 +48,11 @@ def list_pymes(db: Session = Depends(get_db)):
         "aprobado": p.Pyme.aprobado,
         "subcategoria": p.Pyme.subcategoria,
         "calificacion_promedio": round(float(p.rating), 2) if p.rating else 0.0,
-        "numero_reseñas": p.reviews_count
+        "numero_reseñas": p.reviews_count,
+        "foto_principal": p.Pyme.foto_principal,
+        "fotos": p.Pyme.fotos,
+        "telefono": p.Pyme.telefono,
+        "whatsapp": p.Pyme.whatsapp,
     } for p in pymes_con_rating]
 
 
@@ -97,6 +101,8 @@ async def create_pyme(
         latitud=lat,
         longitud=lng,
         ubicacion=punto,
+        telefono=datos.telefono,
+        whatsapp=datos.whatsapp,
         id_usuario=current_user.id_usuario
     )
     db.add(nueva_pyme)
@@ -172,6 +178,10 @@ def update_pyme(
         pyme.latitud = nueva_lat
         pyme.longitud = nueva_lng
         pyme.ubicacion = from_shape(Point(nueva_lng, nueva_lat), srid=4326)
+    if datos.telefono is not None:
+        pyme.telefono = datos.telefono
+    if datos.whatsapp is not None:
+        pyme.whatsapp = datos.whatsapp
 
     db.commit()
     db.refresh(pyme)

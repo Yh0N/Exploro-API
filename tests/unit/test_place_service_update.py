@@ -19,8 +19,8 @@ def test_actualizar_lugar_coordenadas_reconstruye_punto(monkeypatch):
     db.query.return_value.filter.return_value.first.return_value = lugar
 
     monkeypatch.setattr(
-        "app.services.place_service._calcular_calificacion",
-        lambda session, id_lugar: 4.0,
+        "app.services.place_service._obtener_estadisticas_resenas",
+        lambda session, id_lugar: (4.0, 2),
     )
 
     datos = PlaceUpdate(latitud=1.5, longitud=-77.5)

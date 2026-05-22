@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from app.schemas.place_schema import PlaceCreate, PlaceUpdate
 from app.services.place_service import (
-    _calcular_calificacion,
+    _obtener_estadisticas_resenas,
     agregar_calificacion,
     crear_lugar,
     eliminar_lugar,
@@ -14,20 +14,26 @@ from app.services.place_service import (
 )
 
 
-def test_calcular_calificacion_con_y_sin_datos():
+def test_obtener_estadisticas_resenas_con_y_sin_datos():
     db = MagicMock()
-    db.query.return_value.filter.return_value.scalar.return_value = 4.3333
-    assert _calcular_calificacion(db, 1) == 4.33
+    db.query.return_value.filter.return_value.first.return_value = (4.3333, 3)
+    avg, count = _obtener_estadisticas_resenas(db, 1)
+    assert avg == 4.33
+    assert count == 3
 
-    db.query.return_value.filter.return_value.scalar.return_value = None
-    assert _calcular_calificacion(db, 1) is None
+    db.query.return_value.filter.return_value.first.return_value = (None, 0)
+    avg, count = _obtener_estadisticas_resenas(db, 1)
+    assert avg is None
+    assert count == 0
 
 
 def test_agregar_calificacion():
     db = MagicMock()
-    db.query.return_value.filter.return_value.scalar.return_value = 5.0
+    db.query.return_value.filter.return_value.first.return_value = (5.0, 1)
     d = {"id_lugar": 2}
-    assert agregar_calificacion(d, db)["calificacion_promedio"] == 5.0
+    res = agregar_calificacion(d, db)
+    assert res["calificacion_promedio"] == 5.0
+    assert res["numero_reseñas"] == 1
 
 
 def test_obtener_lugar_404():
@@ -57,7 +63,7 @@ def test_listar_lugares_sin_filtros():
     lugar.categoria = "museo"
     lugar.aprobado = True
     db.query.return_value.outerjoin.return_value.filter.return_value.group_by.return_value.all.return_value = [
-        (lugar, 4.5)
+        (lugar, 4.5, 10)
     ]
     out = listar_lugares(db)
     assert len(out) == 1

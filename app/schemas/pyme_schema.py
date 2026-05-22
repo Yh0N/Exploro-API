@@ -16,6 +16,8 @@ class PymeCreate(BaseModel):
     ubicacion_textual: Optional[str] = Field(None, max_length=300, description="Dirección textual")
     latitud: Optional[float] = Field(None, ge=-90, le=90, description="Latitud")
     longitud: Optional[float] = Field(None, ge=-180, le=180, description="Longitud")
+    telefono: Optional[str] = Field(None, max_length=20, description="Número de contacto")
+    whatsapp: Optional[str] = Field(None, max_length=20, description="Número de WhatsApp (sin +57)")
 
 
 class PymeUpdate(BaseModel):
@@ -26,6 +28,8 @@ class PymeUpdate(BaseModel):
     ubicacion_textual: Optional[str] = Field(None, max_length=300)
     latitud: Optional[float] = Field(None, ge=-90, le=90)
     longitud: Optional[float] = Field(None, ge=-180, le=180)
+    telefono: Optional[str] = Field(None, max_length=20)
+    whatsapp: Optional[str] = Field(None, max_length=20)
 
 
 class PymeResponse(BaseModel):
@@ -37,10 +41,14 @@ class PymeResponse(BaseModel):
     ubicacion_textual: Optional[str] = None
     latitud: Optional[float] = None
     longitud: Optional[float] = None
+    telefono: Optional[str] = None
+    whatsapp: Optional[str] = None
     id_usuario: int
     aprobado: bool = False
     calificacion_promedio: Optional[float] = 0.0
     numero_reseñas: Optional[int] = 0
+    foto_principal: Optional[str] = None
+    fotos: Optional[str] = None
 
     class Config:
         from_attributes = True

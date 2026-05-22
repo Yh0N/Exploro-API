@@ -31,6 +31,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://exploro_user:exploro_password@db:5432/exploro_db
     env_file:
       - .env
     ports:
