@@ -339,7 +339,7 @@ def obtener_lugares_populares(db: Session, limite: int = 10) -> List[dict]:
     max_resenas = max(int(total or 0) for _, _, total in resultados)
     lugares = []
     for lugar, avg, total in resultados:
-        score_popularidad = _score_popularidad(float(avg), int(total or 0), max_resenas)
+        score_popularidad = _score_popularidad(float(avg) if avg is not None else None, int(total or 0), max_resenas)
         lugares.append(
             {
                 "id_lugar": lugar.id_lugar,

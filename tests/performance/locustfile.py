@@ -36,8 +36,10 @@ Instrucciones de ejecucion:
 from __future__ import annotations
 
 import random
+import time
 import uuid
 
+import requests as _requests
 from locust import HttpUser, LoadTestShape, TaskSet, between, events, task
 
 
@@ -61,16 +63,52 @@ SEED_USERS = [
     {"correo": "admin@exploro.test",    "contraseña": "Test1234!"},
 ]
 
+# ---------------------------------------------------------------------------
+# Pool de tokens pre-cargado antes de que arranquen los VUs.
+# Evita que 100 on_start() disparen 100 logins simultáneos contra el
+# rate limit de 20/min del endpoint /auth/login.
+# ---------------------------------------------------------------------------
+_TOKEN_POOL: list[str] = []
+
+
+@events.test_start.add_listener
+def _precargar_tokens(environment, **_kw):
+    """
+    Hace login una vez por seed user ANTES de que spawnen los VUs.
+    Los tokens se comparten entre todos los usuarios virtuales.
+    Con 5 seed users nunca se supera el rate limit (20/min).
+    """
+    base_url = (environment.host or "http://localhost:8000").rstrip("/")
+    print("\n[locustfile] Precargando pool de tokens JWT...")
+    for cred in SEED_USERS:
+        try:
+            resp = _requests.post(
+                f"{base_url}/auth/login",
+                json={"correo": cred["correo"], "contraseña": cred["contraseña"]},
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                token = resp.json().get("access_token")
+                if token:
+                    _TOKEN_POOL.append(token)
+                    print(f"  [OK] Token para {cred['correo']}")
+            else:
+                print(f"  [WARN] Login {cred['correo']} -> {resp.status_code}: {resp.text[:80]}")
+        except Exception as exc:
+            print(f"  [ERROR] Login {cred['correo']}: {exc}")
+        # Pausa entre logins del precalentamiento para no saturar el rate limit
+        time.sleep(0.5)
+    print(f"[locustfile] Pool listo: {len(_TOKEN_POOL)}/{len(SEED_USERS)} tokens\n")
+
 
 # ---------------------------------------------------------------------------
-# Helper: login OAuth2 y devuelve JWT
+# Helper: login y devuelve JWT (usado solo en el fallback de registro)
 # ---------------------------------------------------------------------------
 def _login(client, correo: str, contraseña: str) -> str | None:
     """Retorna access_token o None si el login falla."""
     with client.post(
         "/auth/login",
-        data={"username": correo, "password": contraseña},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        json={"correo": correo, "contraseña": contraseña},
         name="POST /auth/login",
         catch_response=True,
     ) as resp:
@@ -79,6 +117,41 @@ def _login(client, correo: str, contraseña: str) -> str | None:
             return resp.json().get("access_token")
         resp.failure(f"Login fallo ({resp.status_code}): {resp.text[:100]}")
         return None
+
+
+# ---------------------------------------------------------------------------
+# Helper: asigna token del pool o registra un VU temporal como fallback
+# ---------------------------------------------------------------------------
+def _inicializar_token(vu: HttpUser) -> None:
+    """
+    Intenta asignar token del pool pre-cargado.
+    Si el pool está vacío (seeds inexistentes), registra un usuario temporal.
+    Campo 'rol' es int (1=regular) según UserCreate schema.
+    """
+    vu.token = None
+
+    if _TOKEN_POOL:
+        vu.token = random.choice(_TOKEN_POOL)
+        return
+
+    # Fallback: registrar usuario temporal y hacer login
+    suffix = uuid.uuid4().hex[:8]
+    correo = f"vu_{suffix}@load.test"
+    reg = vu.client.post(
+        "/auth/register",
+        json={
+            "nombre": f"VU {suffix}",
+            "correo": correo,
+            "contraseña": "Load1234!",
+            "preferencias": ["museo", "parque"],
+            "rol": 1,
+        },
+        name="POST /auth/register [setup]",
+    )
+    if reg.status_code == 201:
+        # Pausa breve para no saturar el rate limit de login
+        time.sleep(random.uniform(0.5, 2.0))
+        vu.token = _login(vu.client, correo, "Load1234!")
 
 
 # ===========================================================================
@@ -140,27 +213,8 @@ class FlujoLoginRecomendaciones(HttpUser):
     wait_time = between(2, 5)
 
     def on_start(self):
-        """Obtiene JWT al inicio de cada usuario virtual."""
-        self.token: str | None = None
-        cred = random.choice(SEED_USERS)
-        self.token = _login(self.client, cred["correo"], cred["contraseña"])
-
-        # Fallback: crea un usuario temporal si la semilla no existe
-        if self.token is None:
-            suffix = uuid.uuid4().hex[:8]
-            correo = f"vu_{suffix}@load.test"
-            self.client.post(
-                "/auth/register",
-                json={
-                    "nombre": f"VU {suffix}",
-                    "correo": correo,
-                    "contraseña": "Load1234!",
-                    "preferencias": ["museo", "parque"],
-                    "rol": "usuario_regular",
-                },
-                name="POST /auth/register [setup]",
-            )
-            self.token = _login(self.client, correo, "Load1234!")
+        """Obtiene token del pool pre-cargado (sin tocar el rate limit de login)."""
+        _inicializar_token(self)
 
     def _headers(self) -> dict:
         if self.token:
@@ -223,6 +277,7 @@ class BusquedaGeoespacialTasks(TaskSet):
         radio = random.choice([1, 2, 3, 5])
         self.client.get(
             f"/places/nearby?latitud={PASTO_LAT}&longitud={PASTO_LON}&radio_km={radio}",
+            headers=self.user._headers(),
             name="GET /places/nearby [pasto centro]",
         )
 
@@ -234,6 +289,7 @@ class BusquedaGeoespacialTasks(TaskSet):
         radio = round(random.uniform(0.5, 5.0), 1)
         self.client.get(
             f"/places/nearby?latitud={lat:.4f}&longitud={lon:.4f}&radio_km={radio}",
+            headers=self.user._headers(),
             name="GET /places/nearby [random]",
         )
 
@@ -244,6 +300,7 @@ class BusquedaGeoespacialTasks(TaskSet):
         self.client.get(
             f"/recommendations/nearby"
             f"?latitud={PASTO_LAT}&longitud={PASTO_LON}&radio_km={radio}",
+            headers=self.user._headers(),
             name="GET /recommendations/nearby",
         )
 
@@ -256,6 +313,15 @@ class PlacesNearbyUser(HttpUser):
 
     tasks = [BusquedaGeoespacialTasks]
     wait_time = between(0.5, 2)
+
+    def on_start(self):
+        """Obtiene token del pool pre-cargado (sin tocar el rate limit de login)."""
+        _inicializar_token(self)
+
+    def _headers(self) -> dict:
+        if self.token:
+            return {"Authorization": f"Bearer {self.token}"}
+        return {}
 
 
 # ===========================================================================

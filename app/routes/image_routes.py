@@ -10,7 +10,7 @@ from app.models.pyme import Pyme
 from app.schemas.image_schema import ImagenResponse
 from app.services.image_service import process_and_save_image, delete_image_file
 
-router = APIRouter(prefix="/imagenes", tags=["Imágenes (RF12)"])
+router = APIRouter(prefix="/imagenes", tags=["Imágenes"])
 
 # Límites configurados
 LIMIT_PYME = 10

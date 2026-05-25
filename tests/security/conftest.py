@@ -81,13 +81,18 @@ def sec_client(security_app):
 
 
 @pytest.fixture(autouse=True)
-def _limpiar_tablas(security_engine):
-    """Trunca todas las tablas tras cada test para garantizar aislamiento."""
+def _limpiar_tablas(request):
+    """Trunca tablas tras cada test de integración. Tests sin @integration no tocan la BD."""
+    if not request.node.get_closest_marker("integration"):
+        yield
+        return
+
+    engine = request.getfixturevalue("security_engine")
     yield
     from app.database.connection import Base
     names = ", ".join(f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables))
     if names:
-        with security_engine.connect() as conn:
+        with engine.connect() as conn:
             conn.execute(text(f"TRUNCATE TABLE {names} RESTART IDENTITY CASCADE"))
             conn.commit()
 
