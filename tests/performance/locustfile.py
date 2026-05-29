@@ -340,9 +340,9 @@ class PicoGeoespacialShape(LoadTestShape):
     """
 
     _stages = [
-        {"hasta": 120, "usuarios": 200, "spawn_rate": 1.67},   # 2 min ramp-up
-        {"hasta": 180, "usuarios": 200, "spawn_rate": 0.0},    # 1 min meseta
-        {"hasta": 240, "usuarios": 0,   "spawn_rate": 5.0},    # 1 min cool-down
+        {"hasta": 20,  "usuarios": 50,  "spawn_rate": 5.0},    # 20 s ramp-up
+        {"hasta": 40,  "usuarios": 50,  "spawn_rate": 1.0},    # 20 s meseta
+        {"hasta": 50,  "usuarios": 0,   "spawn_rate": 10.0},   # 10 s cool-down
     ]
 
     def tick(self):

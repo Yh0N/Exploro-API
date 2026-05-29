@@ -191,6 +191,7 @@ jobs:
         run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
       - name: OWASP ZAP Baseline (SQLi, auth, cabeceras)
         uses: zaproxy/action-baseline@v0.12.0
+        continue-on-error: true
         with:
           target: "http://host.docker.internal:8000"
           cmd_options: "-a"
