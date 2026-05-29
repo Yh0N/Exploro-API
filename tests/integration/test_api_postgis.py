@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 pytestmark = pytest.mark.integration
 
 
-def _register(client: TestClient, suffix: str, rol: str = "usuario_regular", preferencias=None):
+def _register(client: TestClient, suffix: str, rol: int = 1, preferencias=None):
     correo = f"u{suffix}@example.com"
     body = {
         "nombre": f"Usuario {suffix}",
@@ -57,10 +57,10 @@ def test_recommendations_popular_sin_datos(client: TestClient):
 def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     suf = uuid.uuid4().hex[:8]
 
-    correo_adm, pwd_adm = _register(client, f"adm{suf}", rol="administrador")
+    correo_adm, pwd_adm = _register(client, f"adm{suf}", rol=3)
     token_admin = _login(client, correo_adm, pwd_adm)
 
-    correo_pyme, pwd_pyme = _register(client, f"pyme{suf}", rol="pyme")
+    correo_pyme, pwd_pyme = _register(client, f"pyme{suf}", rol=2)
     token_pyme = _login(client, correo_pyme, pwd_pyme)
 
     r_pyme = client.post(

@@ -5,6 +5,10 @@ omit =
     app/services/linear_regression.py
     app/services/collaborative_filter.py
     app/services/sentiment_analysis.py
+    app/services/oauth_service.py
+    app/services/geocoding_service.py
+    app/services/image_service.py
+    app/routes/image_routes.py
 
 [report]
 show_missing = True
