@@ -21,7 +21,6 @@ Ejecución:
 
 from __future__ import annotations
 
-import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -113,10 +112,10 @@ class TestJwtSeguridad:
         app = FastAPI()
 
         @app.get("/solo_admin")
-        def solo_admin(user=Depends(sec_module.require_role(["administrador"]))):
+        def solo_admin(user=Depends(sec_module.require_role([3]))):
             return {"ok": True}
 
-        turista = SimpleNamespace(rol="usuario_regular")
+        turista = SimpleNamespace(rol=1)
         app.dependency_overrides[sec_module.get_current_user] = lambda: turista
         r = TestClient(app).get("/solo_admin")
         assert r.status_code == 403
@@ -126,10 +125,10 @@ class TestJwtSeguridad:
         app = FastAPI()
 
         @app.get("/solo_admin")
-        def solo_admin(user=Depends(sec_module.require_role(["administrador"]))):
+        def solo_admin(user=Depends(sec_module.require_role([3]))):
             return {"ok": True}
 
-        admin = SimpleNamespace(rol="administrador")
+        admin = SimpleNamespace(rol=3)
         app.dependency_overrides[sec_module.get_current_user] = lambda: admin
         r = TestClient(app).get("/solo_admin")
         assert r.status_code == 200
@@ -168,7 +167,7 @@ class TestNoExposicionDatosSensibles:
                 "correo": "nosecret@exploro.test",
                 "contraseña": "NoExpongas1!",
                 "preferencias": [],
-                "rol": "usuario_regular",
+                "rol": 1,
             },
         )
         assert r.status_code == 201
@@ -185,13 +184,12 @@ class TestNoExposicionDatosSensibles:
                 "correo": "logintest@exploro.test",
                 "contraseña": "Secret1234!",
                 "preferencias": [],
-                "rol": "usuario_regular",
+                "rol": 1,
             },
         )
         r = sec_client.post(
             "/auth/login",
-            data={"username": "logintest@exploro.test", "password": "Secret1234!"},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            json={"correo": "logintest@exploro.test", "contraseña": "Secret1234!"},
         )
         assert r.status_code == 200
         body = r.json()
@@ -207,13 +205,12 @@ class TestNoExposicionDatosSensibles:
                 "correo": "metest@exploro.test",
                 "contraseña": "MeSecret1!",
                 "preferencias": [],
-                "rol": "usuario_regular",
+                "rol": 1,
             },
         )
         r_login = sec_client.post(
             "/auth/login",
-            data={"username": "metest@exploro.test", "password": "MeSecret1!"},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            json={"correo": "metest@exploro.test", "contraseña": "MeSecret1!"},
         )
         token = r_login.json()["access_token"]
         r = sec_client.get("/users/me", headers={"Authorization": f"Bearer {token}"})
@@ -238,13 +235,12 @@ class TestNoExposicionDatosSensibles:
                 "correo": "refreshtest@exploro.test",
                 "contraseña": "Refresh1234!",
                 "preferencias": [],
-                "rol": "usuario_regular",
+                "rol": 1,
             },
         )
         r = sec_client.post(
             "/auth/login",
-            data={"username": "refreshtest@exploro.test", "password": "Refresh1234!"},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            json={"correo": "refreshtest@exploro.test", "contraseña": "Refresh1234!"},
         )
         body = r.json()
         # refresh_token puede estar en la respuesta (es correcto), pero no debe
@@ -320,13 +316,12 @@ class TestInyeccionSQL:
                 "correo": "pymesegura@exploro.test",
                 "contraseña": "Pyme1234!",
                 "preferencias": [],
-                "rol": "pyme",
+                "rol": 2,
             },
         )
         r_login = sec_client.post(
             "/auth/login",
-            data={"username": "pymesegura@exploro.test", "password": "Pyme1234!"},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            json={"correo": "pymesegura@exploro.test", "contraseña": "Pyme1234!"},
         )
         token = r_login.json()["access_token"]
 
@@ -352,8 +347,7 @@ class TestInyeccionSQL:
         for payload in ["admin'--", "' OR '1'='1", "x@x.com'; DROP TABLE usuarios --"]:
             r = sec_client.post(
                 "/auth/login",
-                data={"username": payload, "password": "cualquier"},
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                json={"correo": payload, "contraseña": "cualquier"},
             )
             assert r.status_code in (400, 401, 422), (
                 f"El payload '{payload}' retorno {r.status_code}: {r.text}"
@@ -376,8 +370,7 @@ class TestRateLimiting:
         for _ in range(5):
             r = sec_client.post(
                 "/auth/login",
-                data={"username": "noexiste@x.com", "password": "mala"},
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                json={"correo": "noexiste@x.com", "contraseña": "mala"},
             )
             # 401 es correcto (credenciales inválidas), no 429
             assert r.status_code in (400, 401, 422), (
@@ -397,8 +390,7 @@ class TestRateLimiting:
         for _ in range(25):
             r = sec_client.post(
                 "/auth/login",
-                data={"username": "flood@x.com", "password": "mala"},
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                json={"correo": "flood@x.com", "contraseña": "mala"},
             )
             respuestas.append(r.status_code)
 
@@ -423,7 +415,7 @@ class TestRateLimiting:
                     "correo": f"flood_{i}@test.com",
                     "contraseña": "Flood1234!",
                     "preferencias": [],
-                    "rol": "usuario_regular",
+                    "rol": 1,
                 },
             )
             codigos.append(r.status_code)
@@ -456,15 +448,14 @@ class TestControlDeAccesoPorRol:
         )
         r = client.post(
             "/auth/login",
-            data={"username": correo, "password": "Perm1234!"},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            json={"correo": correo, "contraseña": "Perm1234!"},
         )
         return r.json()["access_token"]
 
     def test_sec_perm_01_turista_no_puede_acceder_a_admin(self, sec_client):
         """SEC-PERM-01: un turista no puede acceder a rutas de /admin."""
         token = self._crear_y_loguear(
-            sec_client, "turista_perm@exploro.test", "usuario_regular"
+            sec_client, "turista_perm@exploro.test", 1
         )
         r = sec_client.get("/admin/users", headers={"Authorization": f"Bearer {token}"})
         assert r.status_code in (401, 403)
@@ -472,7 +463,7 @@ class TestControlDeAccesoPorRol:
     def test_sec_perm_02_admin_puede_acceder_a_admin(self, sec_client):
         """SEC-PERM-02: un administrador puede acceder a /admin/users."""
         token = self._crear_y_loguear(
-            sec_client, "admin_perm@exploro.test", "administrador"
+            sec_client, "admin_perm@exploro.test", 3
         )
         r = sec_client.get("/admin/users", headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 200
@@ -480,7 +471,7 @@ class TestControlDeAccesoPorRol:
     def test_sec_perm_03_usuario_no_puede_modificar_perfil_ajeno(self, sec_client):
         """SEC-PERM-03: un usuario no puede editar el perfil de otro usuario."""
         token_a = self._crear_y_loguear(
-            sec_client, "userA_perm@exploro.test", "usuario_regular"
+            sec_client, "userA_perm@exploro.test", 1
         )
         # Intenta modificar usando el token de A pero con datos de B
         r = sec_client.put(
@@ -495,7 +486,7 @@ class TestControlDeAccesoPorRol:
         """SEC-PERM-04: un usuario no puede eliminar una reseña de otro usuario."""
         # Crear lugar como pyme
         token_pyme = self._crear_y_loguear(
-            sec_client, "pyme_perm@exploro.test", "pyme"
+            sec_client, "pyme_perm@exploro.test", 2
         )
         r_lugar = sec_client.post(
             "/places",
@@ -513,7 +504,7 @@ class TestControlDeAccesoPorRol:
 
         # Turista A crea una reseña
         token_a = self._crear_y_loguear(
-            sec_client, "autor_resena@exploro.test", "usuario_regular"
+            sec_client, "autor_resena@exploro.test", 1
         )
         r_resena = sec_client.post(
             f"/places/{id_lugar}/reviews",
@@ -526,7 +517,7 @@ class TestControlDeAccesoPorRol:
 
         # Turista B intenta eliminar la reseña de A -> debe ser 403
         token_b = self._crear_y_loguear(
-            sec_client, "otro_usuario@exploro.test", "usuario_regular"
+            sec_client, "otro_usuario@exploro.test", 1
         )
         r_del = sec_client.delete(
             f"/reviews/{id_resena}",
@@ -540,7 +531,7 @@ class TestControlDeAccesoPorRol:
     def test_sec_perm_05_logout_invalida_token(self, sec_client):
         """SEC-PERM-05: tras logout, el token revocado no permite acceso."""
         token = self._crear_y_loguear(
-            sec_client, "logout_test@exploro.test", "usuario_regular"
+            sec_client, "logout_test@exploro.test", 1
         )
         headers = {"Authorization": f"Bearer {token}"}
 

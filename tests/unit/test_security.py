@@ -31,15 +31,15 @@ def test_require_role_permite_y_deniega():
     app = FastAPI()
 
     @app.get("/admin")
-    def ruta_admin(user=Depends(security.require_role(["administrador"]))):
+    def ruta_admin(user=Depends(security.require_role([3]))):
         return {"rol": user.rol}
 
     cliente = TestClient(app)
-    ok = SimpleNamespace(rol="administrador")
+    ok = SimpleNamespace(rol=3)
     app.dependency_overrides[security.get_current_user] = lambda: ok
     assert cliente.get("/admin").status_code == 200
 
-    bad = SimpleNamespace(rol="usuario_regular")
+    bad = SimpleNamespace(rol=1)
     app.dependency_overrides[security.get_current_user] = lambda: bad
     assert cliente.get("/admin").status_code == 403
 

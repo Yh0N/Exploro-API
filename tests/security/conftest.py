@@ -101,7 +101,7 @@ def _limpiar_tablas(request):
 # Helpers reutilizables
 # ---------------------------------------------------------------------------
 
-def registrar_usuario(client, suffix: str, rol: str = "usuario_regular") -> dict:
+def registrar_usuario(client, suffix: str, rol: int = 1) -> dict:
     """Registra un usuario y retorna {correo, contraseña, token}."""
     correo = f"sec_{suffix}@exploro.test"
     contraseña = "SecTest1234!"
@@ -118,8 +118,7 @@ def registrar_usuario(client, suffix: str, rol: str = "usuario_regular") -> dict
     assert r.status_code == 201, r.text
     token_r = client.post(
         "/auth/login",
-        data={"username": correo, "password": contraseña},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        json={"correo": correo, "contraseña": contraseña},
     )
     assert token_r.status_code == 200, token_r.text
     return {
