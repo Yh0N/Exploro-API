@@ -29,8 +29,7 @@ def _register(client: TestClient, suffix: str, rol: int = 1, preferencias=None):
 def _login(client: TestClient, correo: str, password: str) -> str:
     r = client.post(
         "/auth/login",
-        data={"username": correo, "password": password},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        json={"correo": correo, "contraseña": password},
     )
     assert r.status_code == 200, r.text
     return r.json()["access_token"]
