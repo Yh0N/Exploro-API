@@ -73,6 +73,10 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     r_pub = client.get(f"/pymes/{id_pyme}")
     assert r_pub.status_code == 200
 
+    r_list_pymes = client.get("/pymes")
+    assert r_list_pymes.status_code == 200
+    assert any(p["id_pyme"] == id_pyme for p in r_list_pymes.json())
+
     lat, lon = 1.2084, -77.2784
     r_place = client.post(
         "/places",
@@ -92,6 +96,9 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     assert r_pending.status_code == 200
     assert any(p["id_lugar"] == id_lugar for p in r_pending.json())
 
+    r_pending_pymes = client.get("/admin/pymes/pending", headers=_auth_headers(token_admin))
+    assert r_pending_pymes.status_code == 200
+
     r_apr = client.put(f"/admin/places/{id_lugar}/approve", headers=_auth_headers(token_admin))
     assert r_apr.status_code == 200
     assert r_apr.json()["aprobado"] is True
@@ -110,6 +117,23 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     r_list_rev = client.get(f"/places/{id_lugar}/reviews")
     assert r_list_rev.status_code == 200
     assert len(r_list_rev.json()) >= 1
+
+    r_upd_rev = client.put(
+        f"/reviews/{id_resena}",
+        json={"comentarios": "Excelente lugar", "puntuacion": 4},
+        headers=_auth_headers(token_rev),
+    )
+    assert r_upd_rev.status_code == 200
+
+    r_pyme_review = client.post(
+        f"/pymes/{id_pyme}/reviews",
+        json={"comentarios": "Buena pyme", "puntuacion": 4},
+        headers=_auth_headers(token_rev),
+    )
+    assert r_pyme_review.status_code == 201, r_pyme_review.text
+
+    r_list_pyme_rev = client.get(f"/pymes/{id_pyme}/reviews")
+    assert r_list_pyme_rev.status_code == 200
 
     r_places = client.get("/places")
     assert r_places.status_code == 200
@@ -157,6 +181,13 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     )
     assert r_upd_place.status_code == 200
 
+    r_upd_pyme = client.put(
+        f"/pymes/{id_pyme}",
+        json={"nombre": "Pyme Test v2", "tipo": "cafetería"},
+        headers=_auth_headers(token_pyme),
+    )
+    assert r_upd_pyme.status_code == 200
+
     r_pers = client.get(
         f"/recommendations?latitud={lat}&longitud={lon}&radio_km=10&limite=5",
         headers=_auth_headers(token_tur),
@@ -183,3 +214,6 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
 
     r_del_place = client.delete(f"/places/{id_lugar}", headers=_auth_headers(token_admin))
     assert r_del_place.status_code == 200
+
+    r_del_pyme = client.delete(f"/pymes/{id_pyme}", headers=_auth_headers(token_admin))
+    assert r_del_pyme.status_code == 200

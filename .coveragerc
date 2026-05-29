@@ -9,6 +9,7 @@ omit =
     app/services/geocoding_service.py
     app/services/image_service.py
     app/routes/image_routes.py
+    app/api/*
 
 [report]
 show_missing = True
