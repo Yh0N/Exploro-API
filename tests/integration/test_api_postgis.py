@@ -115,7 +115,10 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     assert r_places.status_code == 200
     assert any(p["id_lugar"] == id_lugar for p in r_places.json())
 
-    r_near = client.get(f"/places/nearby?latitud={lat}&longitud={lon}&radio_km=5")
+    r_near = client.get(
+        f"/places/nearby?latitud={lat}&longitud={lon}&radio_km=5",
+        headers=_auth_headers(token_rev),
+    )
     assert r_near.status_code == 200
     assert any(p["id_lugar"] == id_lugar for p in r_near.json())
 
