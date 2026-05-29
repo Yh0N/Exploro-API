@@ -144,10 +144,11 @@ def on_startup():
     from sqlalchemy import text
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+    Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
         # Migraciones seguras: ADD COLUMN IF NOT EXISTS nunca rompe nada
         conn.execute(text("ALTER TABLE pymes ADD COLUMN IF NOT EXISTS telefono VARCHAR(20);"))
         conn.execute(text("ALTER TABLE pymes ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(20);"))
-    Base.metadata.create_all(bind=engine)
 
 
 # ─────────────────────────────────────────────────────────────────
