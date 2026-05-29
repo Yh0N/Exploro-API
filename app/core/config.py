@@ -89,8 +89,6 @@ class Settings(BaseSettings):
         variables_criticas = {
             "SECRET_KEY": instance.SECRET_KEY,
             "DATABASE_URL": instance.DATABASE_URL,
-            "GOOGLE_CLIENT_ID": instance.GOOGLE_CLIENT_ID,
-            "GOOGLE_CLIENT_SECRET": instance.GOOGLE_CLIENT_SECRET,
         }
 
         faltantes = [
