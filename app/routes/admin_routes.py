@@ -139,6 +139,37 @@ async def approve_pyme(
     return pyme
 
 
+@router.put(
+    "/places/{id_lugar}/approve",
+    summary="Aprobar lugar",
+    description="Aprueba un lugar turístico para que aparezca públicamente (solo admin)"
+)
+def approve_place(
+    id_lugar: int,
+    current_user: Usuario = Depends(require_role([3])),
+    db: Session = Depends(get_db)
+):
+    lugar = db.query(Lugar).filter(Lugar.id_lugar == id_lugar).first()
+    if not lugar:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lugar no encontrado"
+        )
+    lugar.aprobado = True
+    db.commit()
+    db.refresh(lugar)
+    resultado = {
+        "id_lugar": lugar.id_lugar,
+        "nombre": lugar.nombre,
+        "descripcion": lugar.descripcion,
+        "latitud": lugar.latitud,
+        "longitud": lugar.longitud,
+        "categoria": lugar.categoria,
+        "aprobado": lugar.aprobado,
+    }
+    return agregar_calificacion(resultado, db)
+
+
 @router.get(
     "/all-places",
     summary="Listar todos los lugares",

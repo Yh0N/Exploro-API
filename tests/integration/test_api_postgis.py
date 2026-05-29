@@ -88,7 +88,7 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     assert r_place.status_code == 201, r_place.text
     id_lugar = r_place.json()["id_lugar"]
 
-    r_pending = client.get("/admin/places", headers=_auth_headers(token_admin))
+    r_pending = client.get("/admin/all-places", headers=_auth_headers(token_admin))
     assert r_pending.status_code == 200
     assert any(p["id_lugar"] == id_lugar for p in r_pending.json())
 
