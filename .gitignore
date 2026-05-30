@@ -13,6 +13,13 @@ __pycache__/
 # Docker
 postgres_data/
 
+# Cobertura de código
+.coverage
+htmlcov/
+
+# Documentos de diseño/prompt
+prom.md
+
 # Resultados de pruebas de carga (Locust CSV output)
 *_stats.csv
 *_stats_history.csv

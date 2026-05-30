@@ -16,7 +16,7 @@ from app.services.place_service import (
     crear_lugar, obtener_lugar, listar_lugares,
     actualizar_lugar, eliminar_lugar, buscar_lugares_cercanos
 )
-from app.core.security import get_optional_current_user, require_role
+from app.core.security import get_optional_current_user, require_role, get_current_user
 from app.models.user import Usuario
 from app.models.pyme import Pyme
 from app.services.geocoding_service import geocode_address
@@ -137,14 +137,20 @@ def get_place(id_lugar: int, db: Session = Depends(get_db)):
 def update_place(
     id_lugar: int,
     datos: PlaceUpdate,
-    current_user: Usuario = Depends(require_role([2, 3])),
+    current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Actualiza los datos de un lugar existente.
-    Solo pymes (dueñas) o administradores pueden actualizar.
-    Si se cambian coordenadas, se reconstruye el punto PostGIS.
+    Puede editar el dueño del lugar (cualquier rol) o un administrador (rol 3).
     """
+    from fastapi import HTTPException
+    from app.models.place import Lugar
+    lugar = db.query(Lugar).filter(Lugar.id_lugar == id_lugar).first()
+    if not lugar:
+        raise HTTPException(status_code=404, detail="Lugar no encontrado")
+    if lugar.id_usuario != current_user.id_usuario and current_user.rol != 3:
+        raise HTTPException(status_code=403, detail="Solo el dueño o un administrador puede editar este lugar")
     return actualizar_lugar(db, id_lugar, datos)
 
 
