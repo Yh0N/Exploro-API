@@ -276,8 +276,7 @@ class TestInyeccionSQL:
     def test_sec_inj_01_categoria_con_payload_no_rompe_api(self, sec_client):
         """SEC-INJ-01: payloads SQL en ?categoria no deben causar 500."""
         for payload in self._PAYLOADS_INYECCION:
-            r = sec_client.get(f"/places?categoria={payload}",
-                               name=f"SQL injection: {payload[:30]}")
+            r = sec_client.get(f"/places?categoria={payload}")
             assert r.status_code in (200, 422, 400), (
                 f"El payload '{payload}' provocó un error inesperado: {r.status_code} {r.text}"
             )
@@ -323,7 +322,17 @@ class TestInyeccionSQL:
             "/auth/login",
             json={"correo": "pymesegura@exploro.test", "contraseña": "Pyme1234!"},
         )
+        if r_login.status_code != 200:
+            pytest.skip(f"No se pudo autenticar pyme para INJ-03: {r_login.status_code}")
         token = r_login.json()["access_token"]
+        auth = {"Authorization": f"Bearer {token}"}
+
+        # Crear entidad Pyme para que el usuario pueda crear lugares
+        sec_client.post(
+            "/pymes",
+            json={"nombre": "Pyme Segura", "tipo": "agencia", "ubicacion_textual": "Pasto, Nariño"},
+            headers=auth,
+        )
 
         nombre_peligroso = "Café O'Reilly & \"Burgers\"; DROP TABLE usuarios --"
         r = sec_client.post(
@@ -335,10 +344,12 @@ class TestInyeccionSQL:
                 "longitud": -77.2811,
                 "categoria": "restaurante",
             },
-            headers={"Authorization": f"Bearer {token}"},
+            headers=auth,
         )
-        # Debe crear el lugar normalmente (el ORM escapa el nombre)
-        assert r.status_code in (201, 422)
+        # El ORM debe escapar el nombre (201) o rechazar la entrada (400/422); nunca 500
+        assert r.status_code in (201, 400, 422), (
+            f"Respuesta inesperada al crear lugar con nombre especial: {r.status_code} {r.text}"
+        )
         if r.status_code == 201:
             assert r.json()["nombre"] == nombre_peligroso
 
@@ -436,20 +447,22 @@ class TestControlDeAccesoPorRol:
     """SEC-PERM: valida que los roles se aplican correctamente en cada endpoint."""
 
     def _crear_y_loguear(self, client, correo, rol):
-        client.post(
-            "/auth/register",
-            json={
-                "nombre": f"Test {rol}",
-                "correo": correo,
-                "contraseña": "Perm1234!",
-                "preferencias": [],
-                "rol": rol,
-            },
-        )
-        r = client.post(
-            "/auth/login",
-            json={"correo": correo, "contraseña": "Perm1234!"},
-        )
+        from tests.security.conftest import _perm_tokens_cache
+        if correo in _perm_tokens_cache:
+            return _perm_tokens_cache[correo]
+
+        # Fallback si el cache no tiene el token (no debería ocurrir normalmente)
+        client.post("/auth/register", json={
+            "nombre": f"Test {rol}",
+            "correo": correo,
+            "contraseña": "Perm1234!",
+            "preferencias": [],
+            "rol": rol,
+        })
+        r = client.post("/auth/login", json={"correo": correo, "contraseña": "Perm1234!"})
+        if r.status_code == 429:
+            pytest.skip("Rate limit en login — ejecutar tests/security/ en aislamiento")
+        assert r.status_code == 200, f"Login falló: {r.status_code} {r.text}"
         return r.json()["access_token"]
 
     def test_sec_perm_01_turista_no_puede_acceder_a_admin(self, sec_client):

@@ -15,6 +15,20 @@ import os
 import pytest
 from sqlalchemy import text
 
+# Tokens pre-obtenidos para SEC-PERM tests. Se llenan en _preregistrar_perm_users
+# (fixture autouse session) ANTES de que TestRateLimiting agote los límites.
+_perm_tokens_cache: dict[str, str] = {}
+
+_PERM_USERS = [
+    ("turista_perm@exploro.test",  "Perm1234!", 1),
+    ("admin_perm@exploro.test",    "Perm1234!", 3),
+    ("userA_perm@exploro.test",    "Perm1234!", 1),
+    ("pyme_perm@exploro.test",     "Perm1234!", 2),
+    ("autor_resena@exploro.test",  "Perm1234!", 1),
+    ("otro_usuario@exploro.test",  "Perm1234!", 1),
+    ("logout_test@exploro.test",   "Perm1234!", 1),
+]
+
 
 def _normalize_url(url: str) -> str:
     if url.startswith("postgresql://") and "+psycopg2" not in url:
@@ -53,23 +67,60 @@ def security_db_url():
 
 @pytest.fixture(scope="session")
 def security_app(security_db_url):
-    """Instancia de la app FastAPI apuntando a la BD de seguridad."""
+    """
+    Instancia de la app FastAPI apuntando a la BD de seguridad (testcontainers).
+
+    Crea un engine nuevo directamente desde security_db_url en lugar de reusar
+    el engine de módulo, que puede estar cacheado con otra DATABASE_URL si los
+    tests unitarios ya importaron app.database.connection.
+    """
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    import app.database.connection as db_module
+
     os.environ["DATABASE_URL"] = security_db_url
 
-    from app.database.connection import Base, engine
+    new_engine = create_engine(security_db_url, pool_pre_ping=True)
+    db_module.engine = new_engine
+    db_module.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=new_engine)
+
     from app.main import app
 
-    with engine.connect() as conn:
+    with new_engine.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         conn.commit()
-    Base.metadata.create_all(bind=engine)
+    db_module.Base.metadata.create_all(bind=new_engine)
     return app
 
 
 @pytest.fixture(scope="session")
 def security_engine(security_app):
-    from app.database.connection import engine
-    return engine
+    import app.database.connection as db_module
+    return db_module.engine
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _preregistrar_perm_users(security_app):
+    """
+    Pre-registra y autentica los usuarios que necesitan los tests SEC-PERM.
+    Corre al inicio de la sesión (autouse session), ANTES de que TestRateLimiting
+    consuma los límites de /auth/register (10/min) y /auth/login (20/min).
+    Los tokens se guardan en _perm_tokens_cache para que _crear_y_loguear los reutilice.
+    """
+    from fastapi.testclient import TestClient
+    with TestClient(security_app) as client:
+        for correo, contraseña, rol in _PERM_USERS:
+            r_reg = client.post("/auth/register", json={
+                "nombre": f"Perm {rol}",
+                "correo": correo,
+                "contraseña": contraseña,
+                "preferencias": [],
+                "rol": rol,
+            })
+            if r_reg.status_code in (201, 409):
+                r_login = client.post("/auth/login", json={"correo": correo, "contraseña": contraseña})
+                if r_login.status_code == 200:
+                    _perm_tokens_cache[correo] = r_login.json()["access_token"]
 
 
 @pytest.fixture
@@ -82,7 +133,11 @@ def sec_client(security_app):
 
 @pytest.fixture(autouse=True)
 def _limpiar_tablas(request):
-    """Trunca tablas tras cada test de integración. Tests sin @integration no tocan la BD."""
+    """
+    Trunca tablas tras cada test de integración. Tests sin @integration no tocan la BD.
+    Se excluye 'usuarios' de la truncación para que los tokens pre-cacheados de
+    _preregistrar_perm_users sigan siendo válidos entre tests de TestControlDeAccesoPorRol.
+    """
     if not request.node.get_closest_marker("integration"):
         yield
         return
@@ -90,7 +145,8 @@ def _limpiar_tablas(request):
     engine = request.getfixturevalue("security_engine")
     yield
     from app.database.connection import Base
-    names = ", ".join(f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables))
+    tablas = [t for t in reversed(Base.metadata.sorted_tables) if t.name != "usuarios"]
+    names = ", ".join(f'"{t.name}"' for t in tablas)
     if names:
         with engine.connect() as conn:
             conn.execute(text(f"TRUNCATE TABLE {names} RESTART IDENTITY CASCADE"))

@@ -19,12 +19,16 @@ Ejecución:
 from __future__ import annotations
 
 import concurrent.futures
+import os
 import threading
 
 import pytest
+import requests
 from sqlalchemy import text
 
 pytestmark = pytest.mark.integration
+
+API_BASE = os.environ.get("API_BASE_URL", "http://localhost:8000")
 
 
 class TestConnectionPool:
@@ -34,7 +38,7 @@ class TestConnectionPool:
     la concurrencia sin agotar recursos de base de datos.
     """
 
-    def test_pool_01_20_concurrentes_sin_error(self, client):
+    def test_pool_01_20_concurrentes_sin_error(self):
         """
         POOL-01 [Concurrencia básica]: 20 peticiones concurrentes a GET /places
         deben retornar 200 sin errores de conexión (Too many connections, 503, 500).
@@ -43,7 +47,7 @@ class TestConnectionPool:
         lock = threading.Lock()
 
         def hacer_peticion(_):
-            r = client.get("/places")
+            r = requests.get(f"{API_BASE}/places", timeout=10)
             with lock:
                 resultados.append(r.status_code)
 
@@ -59,7 +63,7 @@ class TestConnectionPool:
             "Posible agotamiento del connection pool de SQLAlchemy."
         )
 
-    def test_pool_02_30_concurrentes_endpoints_mixtos(self, client):
+    def test_pool_02_30_concurrentes_endpoints_mixtos(self):
         """
         POOL-02 [Endpoints mixtos]: 30 peticiones concurrentes a distintos endpoints
         públicos no deben generar errores 503 Service Unavailable.
@@ -76,7 +80,7 @@ class TestConnectionPool:
 
         def hacer_peticion(i: int):
             endpoint = endpoints[i % len(endpoints)]
-            r = client.get(endpoint)
+            r = requests.get(f"{API_BASE}{endpoint}", timeout=10)
             with lock:
                 resultados.append((endpoint, r.status_code))
 
@@ -93,14 +97,14 @@ class TestConnectionPool:
             "El pool de conexiones está agotado o el servidor rechaza peticiones."
         )
 
-    def test_pool_03_50_secuenciales_sin_leak(self, client):
+    def test_pool_03_50_secuenciales_sin_leak(self):
         """
         POOL-03 [Sin fuga]: 50 peticiones secuenciales verifican que las conexiones
         se devuelven al pool tras cada petición (sin connection leak).
         """
         fallos = 0
         for i in range(50):
-            r = client.get("/recommendations/popular")
+            r = requests.get(f"{API_BASE}/recommendations/popular", timeout=10)
             if r.status_code not in (200, 429):
                 fallos += 1
 
@@ -142,7 +146,7 @@ class TestConnectionPool:
             "Se necesitan al menos 10 para carga básica concurrente."
         )
 
-    def test_pool_05_100_rafaga_sin_degradacion(self, client):
+    def test_pool_05_100_rafaga_sin_degradacion(self):
         """
         POOL-05 [Ráfaga]: 100 peticiones concurrentes en ráfaga (max_workers=50)
         no deben producir más de 5% de errores no esperados.
@@ -153,7 +157,7 @@ class TestConnectionPool:
 
         def hacer_peticion(i: int):
             endpoint = "/places" if i % 2 == 0 else "/recommendations/popular"
-            r = client.get(endpoint)
+            r = requests.get(f"{API_BASE}{endpoint}", timeout=10)
             with lock:
                 resultados.append(r.status_code)
 

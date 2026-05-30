@@ -38,8 +38,20 @@ def _crear_lugares_test(session, n: int = 10) -> None:
     session.commit()
 
 
+def _get_resenas_table(session) -> str:
+    """Retorna el nombre real de la tabla de reseñas en la BD."""
+    result = session.execute(text(
+        "SELECT tablename FROM pg_tables WHERE schemaname='public' "
+        "AND tablename ILIKE '%re%as%'"
+    ))
+    rows = result.fetchall()
+    if rows:
+        return rows[0][0]
+    return "reseñas"
+
+
 def _explain_analyze(session, sql: str, params: dict | None = None) -> str:
-    """Ejecuta EXPLAIN (ANALYZE, FORMAT TEXT) y retorna el plan como string."""
+    """Ejecuta EXPLAIN ANALYZE y retorna el plan como string."""
     result = session.execute(text(f"EXPLAIN ANALYZE {sql}"), params or {})
     return "\n".join(str(row[0]) for row in result.fetchall())
 
@@ -133,8 +145,9 @@ class TestQueryPerformance:
         de recomendaciones (JOIN lugares + reseñas + GROUP BY).
         """
         _crear_lugares_test(db_session, n=20)
+        resenas = _get_resenas_table(db_session)
 
-        plan = _explain_analyze(db_session, """
+        plan = _explain_analyze(db_session, f"""
             SELECT
                 l.id_lugar,
                 l.nombre,
@@ -142,7 +155,7 @@ class TestQueryPerformance:
                 AVG(r.puntuacion)    AS calificacion_promedio,
                 COUNT(r.id_resena)   AS total_resenas
             FROM lugares l
-            LEFT JOIN "reseñas" r ON l.id_lugar = r.id_lugar
+            LEFT JOIN "{resenas}" r ON l.id_lugar = r.id_lugar
             WHERE l.aprobado = true
             GROUP BY l.id_lugar
             ORDER BY calificacion_promedio DESC NULLS LAST
@@ -168,8 +181,9 @@ class TestQueryPerformance:
         personalizadas que incluye filtro geoespacial ST_DWithin.
         """
         _crear_lugares_test(db_session, n=20)
+        resenas = _get_resenas_table(db_session)
 
-        plan = _explain_analyze(db_session, """
+        plan = _explain_analyze(db_session, f"""
             SELECT
                 l.id_lugar,
                 l.nombre,
@@ -181,7 +195,7 @@ class TestQueryPerformance:
                     ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography
                 ) AS distancia_metros
             FROM lugares l
-            LEFT JOIN "reseñas" r ON l.id_lugar = r.id_lugar
+            LEFT JOIN "{resenas}" r ON l.id_lugar = r.id_lugar
             WHERE l.aprobado = true
               AND ST_DWithin(
                   l.ubicacion::geography,

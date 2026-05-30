@@ -14,8 +14,8 @@ Instrucciones de ejecucion:
   # Instalar dependencias
   pip install locust
 
-  # Pre-requisito: datos semilla cargados
-  python seed_data.py
+  # Pre-requisito (opcional): los seeds se crean automáticamente si no existen.
+  # Para limpiarlos después: python scripts/seed_load_test.py --cleanup
 
   # E1 - Listado de lugares (50 VU, 5 minutos)
   locust -f tests/performance/locustfile.py ListarLugaresPorCategoria \\
@@ -37,7 +37,6 @@ from __future__ import annotations
 
 import random
 import time
-import uuid
 
 import requests as _requests
 from locust import HttpUser, LoadTestShape, TaskSet, between, events, task
@@ -54,13 +53,14 @@ CATEGORIAS = [
     "mirador", "hotel", "agencia", "cafe",
 ]
 
-# Credenciales de usuarios creados por seed_data.py
+# Usuarios seed compartidos entre VUs. Incluyen datos completos para que
+# _precargar_tokens los registre automáticamente si todavía no existen.
 SEED_USERS = [
-    {"correo": "turista1@exploro.test", "contraseña": "Test1234!"},
-    {"correo": "turista2@exploro.test", "contraseña": "Test1234!"},
-    {"correo": "pyme1@exploro.test",    "contraseña": "Test1234!"},
-    {"correo": "pyme2@exploro.test",    "contraseña": "Test1234!"},
-    {"correo": "admin@exploro.test",    "contraseña": "Test1234!"},
+    {"nombre": "Turista 1",  "correo": "turista1@exploro.test", "contraseña": "Test1234!", "rol": 1, "preferencias": ["museo", "parque"]},
+    {"nombre": "Turista 2",  "correo": "turista2@exploro.test", "contraseña": "Test1234!", "rol": 1, "preferencias": ["restaurante"]},
+    {"nombre": "Pyme 1",     "correo": "pyme1@exploro.test",    "contraseña": "Test1234!", "rol": 2, "preferencias": []},
+    {"nombre": "Pyme 2",     "correo": "pyme2@exploro.test",    "contraseña": "Test1234!", "rol": 2, "preferencias": []},
+    {"nombre": "Admin Test", "correo": "admin@exploro.test",    "contraseña": "Test1234!", "rol": 3, "preferencias": []},
 ]
 
 # ---------------------------------------------------------------------------
@@ -70,88 +70,84 @@ SEED_USERS = [
 # ---------------------------------------------------------------------------
 _TOKEN_POOL: list[str] = []
 
+# IDs reales de lugares cargados desde la API en test_start.
+# Evita los 404 que produce usar random.randint cuando los IDs no existen.
+_PLACE_IDS: list[int] = []
+
 
 @events.test_start.add_listener
 def _precargar_tokens(environment, **_kw):
     """
-    Hace login una vez por seed user ANTES de que spawnen los VUs.
-    Los tokens se comparten entre todos los usuarios virtuales.
-    Con 5 seed users nunca se supera el rate limit (20/min).
+    Se ejecuta una vez ANTES de que spawnen los VUs:
+      1. Intenta login por cada seed user; si no existe (401) lo registra primero.
+      2. Carga los IDs reales de lugares desde GET /places para evitar 404.
+    Los tokens se comparten entre todos los VUs (pool de 5 tokens máx).
     """
     base_url = (environment.host or "http://localhost:8000").rstrip("/")
     print("\n[locustfile] Precargando pool de tokens JWT...")
-    for cred in SEED_USERS:
+
+    for user in SEED_USERS:
+        correo = user["correo"]
+        contraseña = user["contraseña"]
         try:
             resp = _requests.post(
                 f"{base_url}/auth/login",
-                json={"correo": cred["correo"], "contraseña": cred["contraseña"]},
+                json={"correo": correo, "contraseña": contraseña},
                 timeout=10,
             )
+            if resp.status_code == 401:
+                # Seed no existe aún: registrarlo y reintentar login
+                _requests.post(f"{base_url}/auth/register", json=user, timeout=10)
+                time.sleep(0.4)
+                resp = _requests.post(
+                    f"{base_url}/auth/login",
+                    json={"correo": correo, "contraseña": contraseña},
+                    timeout=10,
+                )
+
             if resp.status_code == 200:
                 token = resp.json().get("access_token")
                 if token:
                     _TOKEN_POOL.append(token)
-                    print(f"  [OK] Token para {cred['correo']}")
+                    print(f"  [OK] {correo}")
             else:
-                print(f"  [WARN] Login {cred['correo']} -> {resp.status_code}: {resp.text[:80]}")
+                print(f"  [WARN] {correo} -> {resp.status_code}: {resp.text[:80]}")
+
         except Exception as exc:
-            print(f"  [ERROR] Login {cred['correo']}: {exc}")
-        # Pausa entre logins del precalentamiento para no saturar el rate limit
+            print(f"  [ERROR] {correo}: {exc}")
+
         time.sleep(0.5)
-    print(f"[locustfile] Pool listo: {len(_TOKEN_POOL)}/{len(SEED_USERS)} tokens\n")
 
+    print(f"[locustfile] Pool listo: {len(_TOKEN_POOL)}/{len(SEED_USERS)} tokens")
 
-# ---------------------------------------------------------------------------
-# Helper: login y devuelve JWT (usado solo en el fallback de registro)
-# ---------------------------------------------------------------------------
-def _login(client, correo: str, contraseña: str) -> str | None:
-    """Retorna access_token o None si el login falla."""
-    with client.post(
-        "/auth/login",
-        json={"correo": correo, "contraseña": contraseña},
-        name="POST /auth/login",
-        catch_response=True,
-    ) as resp:
+    # Cargar IDs reales de lugares para evitar 404 en GET /places/{id}
+    print("[locustfile] Cargando IDs de lugares...")
+    try:
+        resp = _requests.get(f"{base_url}/places", timeout=10)
         if resp.status_code == 200:
-            resp.success()
-            return resp.json().get("access_token")
-        resp.failure(f"Login fallo ({resp.status_code}): {resp.text[:100]}")
-        return None
+            datos = resp.json()
+            items = datos if isinstance(datos, list) else datos.get("items", datos.get("lugares", []))
+            for lugar in items:
+                lugar_id = lugar.get("id_lugar") or lugar.get("id")
+                if lugar_id:
+                    _PLACE_IDS.append(int(lugar_id))
+            print(f"[locustfile] {len(_PLACE_IDS)} lugares cargados\n")
+        else:
+            print(f"[locustfile] No se pudieron cargar lugares ({resp.status_code}) — GET /places/[id] omitido\n")
+    except Exception as exc:
+        print(f"[locustfile] Error cargando lugares: {exc} — GET /places/[id] omitido\n")
 
 
 # ---------------------------------------------------------------------------
-# Helper: asigna token del pool o registra un VU temporal como fallback
+# Helper: asigna token del pool a cada VU al arrancar
 # ---------------------------------------------------------------------------
 def _inicializar_token(vu: HttpUser) -> None:
     """
-    Intenta asignar token del pool pre-cargado.
-    Si el pool está vacío (seeds inexistentes), registra un usuario temporal.
-    Campo 'rol' es int (1=regular) según UserCreate schema.
+    Asigna un token del pool pre-cargado por _precargar_tokens.
+    Si el pool está vacío (fallo excepcional de setup), el VU opera sin token
+    y las tareas autenticadas se omiten sin contar como error.
     """
-    vu.token = None
-
-    if _TOKEN_POOL:
-        vu.token = random.choice(_TOKEN_POOL)
-        return
-
-    # Fallback: registrar usuario temporal y hacer login
-    suffix = uuid.uuid4().hex[:8]
-    correo = f"vu_{suffix}@load.test"
-    reg = vu.client.post(
-        "/auth/register",
-        json={
-            "nombre": f"VU {suffix}",
-            "correo": correo,
-            "contraseña": "Load1234!",
-            "preferencias": ["museo", "parque"],
-            "rol": 1,
-        },
-        name="POST /auth/register [setup]",
-    )
-    if reg.status_code == 201:
-        # Pausa breve para no saturar el rate limit de login
-        time.sleep(random.uniform(0.5, 2.0))
-        vu.token = _login(vu.client, correo, "Load1234!")
+    vu.token = random.choice(_TOKEN_POOL) if _TOKEN_POOL else None
 
 
 # ===========================================================================
@@ -224,6 +220,8 @@ class FlujoLoginRecomendaciones(HttpUser):
     @task(5)
     def recomendaciones_personalizadas(self):
         """GET /recommendations - motor hibrido con geolocalizacion."""
+        if not self.token:
+            return  # sin token no se mide este endpoint
         delta_lat = random.uniform(-0.05, 0.05)
         delta_lon = random.uniform(-0.05, 0.05)
         radio = random.randint(2, 10)
@@ -248,6 +246,8 @@ class FlujoLoginRecomendaciones(HttpUser):
     @task(2)
     def ver_mi_perfil(self):
         """GET /users/me - latencia del endpoint de perfil autenticado."""
+        if not self.token:
+            return  # sin token no se mide este endpoint
         self.client.get(
             "/users/me",
             headers=self._headers(),
@@ -257,7 +257,9 @@ class FlujoLoginRecomendaciones(HttpUser):
     @task(1)
     def ver_detalle_lugar(self):
         """GET /places/{id} - detalle de un lugar (cache-friendly)."""
-        id_lugar = random.randint(1, 20)
+        if not _PLACE_IDS:
+            return  # sin IDs reales no se puede medir este endpoint
+        id_lugar = random.choice(_PLACE_IDS)
         self.client.get(
             f"/places/{id_lugar}",
             name="GET /places/[id]",

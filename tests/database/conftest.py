@@ -41,22 +41,29 @@ def db_database_url():
 
 @pytest.fixture(scope="session")
 def db_app(db_database_url):
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    import app.database.connection as db_module
+
     os.environ["DATABASE_URL"] = db_database_url
 
-    from app.database.connection import Base, engine
+    new_engine = create_engine(db_database_url, pool_pre_ping=True)
+    db_module.engine = new_engine
+    db_module.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=new_engine)
+
     from app.main import app
 
-    with engine.connect() as conn:
+    with new_engine.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         conn.commit()
-    Base.metadata.create_all(bind=engine)
+    db_module.Base.metadata.create_all(bind=new_engine)
     return app
 
 
 @pytest.fixture(scope="session")
 def db_engine(db_app):
-    from app.database.connection import engine
-    return engine
+    import app.database.connection as db_module
+    return db_module.engine
 
 
 @pytest.fixture

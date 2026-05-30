@@ -12,3 +12,9 @@ __pycache__/
 
 # Docker
 postgres_data/
+
+# Resultados de pruebas de carga (Locust CSV output)
+*_stats.csv
+*_stats_history.csv
+*_failures.csv
+*_exceptions.csv

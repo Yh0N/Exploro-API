@@ -27,6 +27,7 @@ if not hasattr(bcrypt, "__about__"):
 
 # Esquema de seguridad HTTP Bearer para Swagger UI
 security_scheme = HTTPBearer()
+security_scheme_optional = HTTPBearer(auto_error=False)
 
 def get_token_from_header(credentials: HTTPAuthorizationCredentials = Depends(security_scheme)) -> str:
     """Extrae el token en formato string del objeto HTTPAuthorizationCredentials."""
@@ -34,6 +35,38 @@ def get_token_from_header(credentials: HTTPAuthorizationCredentials = Depends(se
 
 # Se conserva el mismo nombre para mantener la compatibilidad con el resto de archivos
 oauth2_scheme = get_token_from_header
+
+
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme_optional),
+    db: Session = Depends(get_db),
+):
+    """
+    Igual a get_current_user pero retorna None en lugar de 401
+    cuando no se envía token. Útil para endpoints públicos con
+    comportamiento diferenciado para usuarios autenticados.
+    """
+    if credentials is None:
+        return None
+    from app.models.user import Usuario
+    from app.models.auth_token import TokenRevocado
+
+    try:
+        payload = verify_token(credentials.credentials)
+    except HTTPException:
+        return None
+
+    correo = payload.get("sub")
+    if not correo:
+        return None
+
+    token_revocado = db.query(TokenRevocado).filter(
+        TokenRevocado.token == credentials.credentials
+    ).first()
+    if token_revocado:
+        return None
+
+    return db.query(Usuario).filter(Usuario.correo == correo).first()
 
 # Contexto de cifrado con bcrypt para hashear contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

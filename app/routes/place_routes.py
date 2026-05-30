@@ -16,7 +16,7 @@ from app.services.place_service import (
     crear_lugar, obtener_lugar, listar_lugares,
     actualizar_lugar, eliminar_lugar, buscar_lugares_cercanos
 )
-from app.core.security import get_current_user, require_role
+from app.core.security import get_optional_current_user, require_role
 from app.models.user import Usuario
 from app.models.pyme import Pyme
 from app.services.geocoding_service import geocode_address
@@ -101,7 +101,7 @@ def nearby_places(
     latitud: float = Query(..., ge=-90, le=90, description="Latitud del punto de referencia"),
     longitud: float = Query(..., ge=-180, le=180, description="Longitud del punto de referencia"),
     radio_km: float = Query(2.0, gt=0, le=50, description="Radio de búsqueda en km"),
-    current_user: Optional[Usuario] = Depends(get_current_user),
+    current_user: Optional[Usuario] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
 ):
     """
