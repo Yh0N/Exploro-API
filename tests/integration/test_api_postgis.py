@@ -73,7 +73,7 @@ def test_flujo_admin_pyme_lugar_resena_recomendaciones(client: TestClient):
     r_pub = client.get(f"/pymes/{id_pyme}")
     assert r_pub.status_code == 200
 
-    r_list_pymes = client.get("/pymes")
+    r_list_pymes = client.get("/pymes", params={"solo_aprobadas": False})
     assert r_list_pymes.status_code == 200
     assert any(p["id_pyme"] == id_pyme for p in r_list_pymes.json())
 
