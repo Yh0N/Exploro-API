@@ -3,7 +3,7 @@ Rutas de pymes de EXPLORO.
 Endpoints para registrar, consultar y actualizar pymes turísticas.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -26,16 +26,24 @@ router = APIRouter(prefix="/pymes", tags=["Pymes"])
     summary="Listar todas las pymes",
     description="Obtiene la lista de todas las pymes registradas con su calificación promedio"
 )
-def list_pymes(db: Session = Depends(get_db)):
+def list_pymes(
+    solo_aprobadas: bool = Query(True, description="Si es True, solo retorna pymes aprobadas"),
+    db: Session = Depends(get_db)
+):
     """
-    Retorna la lista de todas las pymes con su calificación calculada.
+    Retorna la lista de pymes con su calificación calculada.
+    Por defecto solo retorna pymes aprobadas.
     """
-    # Consulta avanzada para traer pymes con su promedio de reseñas
-    pymes_con_rating = db.query(
+    query = db.query(
         Pyme,
         func.avg(Reseña.puntuacion).label("rating"),
         func.count(Reseña.id_resena).label("reviews_count")
-    ).outerjoin(Reseña, Pyme.id_pyme == Reseña.id_pyme).group_by(Pyme.id_pyme).all()
+    ).outerjoin(Reseña, Pyme.id_pyme == Reseña.id_pyme).group_by(Pyme.id_pyme)
+
+    if solo_aprobadas:
+        query = query.filter(Pyme.aprobado == True)
+
+    pymes_con_rating = query.all()
 
     return [{
         "id_pyme": p.Pyme.id_pyme,
