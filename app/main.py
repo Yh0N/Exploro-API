@@ -22,14 +22,15 @@ from app.core.limiter import limiter
 from app.database.connection import engine, Base
 
 # Importar TODOS los modelos para que SQLAlchemy los registre en el metadata
-from app.models.user import Usuario
-from app.models.profile import Perfil
-from app.models.place import Lugar
-from app.models.review import Reseña
-from app.models.recommendation import Recomendacion
-from app.models.pyme import Pyme
-from app.models.auth_token import TokenRevocado
-from app.models.image import Imagen
+# (necesarios para Base.metadata.create_all — no eliminar aunque parezcan sin uso)
+from app.models.user import Usuario  # noqa: F401
+from app.models.profile import Perfil  # noqa: F401
+from app.models.place import Lugar  # noqa: F401
+from app.models.review import Reseña  # noqa: F401
+from app.models.recommendation import Recomendacion  # noqa: F401
+from app.models.pyme import Pyme  # noqa: F401
+from app.models.auth_token import TokenRevocado  # noqa: F401
+from app.models.image import Imagen  # noqa: F401
 
 # Importar routers
 from app.routes.auth_routes import router as auth_router
@@ -117,6 +118,7 @@ app.add_middleware(LimitUploadSize)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://airbnb-clone-exploro(-[\w-]+)?\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

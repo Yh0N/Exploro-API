@@ -22,3 +22,5 @@ slowapi>=0.1.9
 python-magic>=0.4.27
 # NOTA para desarrollo en Windows: instalar también python-magic-bin
 # pip install python-magic-bin
+# Almacenamiento de imágenes en la nube (persistente en Render)
+cloudinary>=1.36.0
